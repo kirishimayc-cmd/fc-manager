@@ -41,6 +41,7 @@ label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:cente
 .field{font-size:13px;font-weight:600;margin:8px 0}.field select{width:auto;display:inline-block;margin:0 4px}ul.plain{margin:0;padding-left:18px;font-size:13px;line-height:1.8}
 .dropcover{display:none}body.dragging .dropcover{display:flex;position:fixed;inset:10px;border:3px dashed var(--wine);border-radius:16px;background:#fff9;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--wine);pointer-events:none;z-index:10}
 @media(max-width:760px){.item{grid-template-columns:1fr auto}.what{grid-column:1/-1}.btns{grid-column:1/-1;justify-content:flex-start}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+.notice.warn-strong{background:#fdecea;border-color:#f5b5ad;color:#8a1c12;font-weight:600}
 </style>
 </head>
 <body>
@@ -64,8 +65,8 @@ const parts = s => s.split('-').map(Number);
 const daysIn = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
 
 function toDate(s) {
-  const [y, m, d] = String(s).trim().split(/[\/-]/).map(Number);
-  return fmt(y, m, d);
+  const m = String(s ?? '').match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  return m ? fmt(Number(m[1]), Number(m[2]), Number(m[3])) : null;
 }
 function addMonths(d, n) {
   const [y, m, day] = parts(d);
@@ -366,6 +367,12 @@ function nextIntervalKey(data, key) {
 
 function intervalTicketsFor(fan, rule, horizon) { return intervalTickets(fan, rule, horizon); }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+function invalidDateFans(data) {
+  const ok = d => d === null || ISO_DAY.test(d);
+  return Object.values(data.fans).filter(f => !f.periods.every(p => ISO_DAY.test(p.start) && ok(p.end)) || !f.planHistory.every(h => ISO_DAY.test(h.start) && ok(h.end))).map(f => f.memberNo);
+}
+
 // ---- records.js
 
 const copyData = d => JSON.parse(JSON.stringify(d));
@@ -463,11 +470,11 @@ function migrateV4(v4, today, ctx) {
   const droppedFans = [];
   for (const f of Object.values(v4.state.fans)) {
     const id = String(f.id);
-    const start = f.continuityStartDate || f.join || f.planJoinDate;
+    const start = toDate(f.continuityStartDate) || toDate(f.join) || toDate(f.planJoinDate);
     const status = f.status === 'left' ? 'left' : f.status === 'candidate' ? 'leftCandidate' : 'active';
-    const endAt = status === 'left' ? (f.leftDate || today) : null;
-    let hist = (Array.isArray(f.planHistory) && f.planHistory.length ? f.planHistory : [{ plan: f.plan, start: f.planJoinDate || start, end: null }])
-      .map(h => ({ planId: toPlanId(h.plan), start: h.start, end: h.end || null })).filter(h => h.planId);
+    const endAt = status === 'left' ? (toDate(f.leftDate) || today) : null;
+    let hist = (Array.isArray(f.planHistory) && f.planHistory.length ? f.planHistory : [{ plan: f.plan, start: toDate(f.planJoinDate) || start, end: null }])
+      .map(h => ({ planId: toPlanId(h.plan), start: toDate(h.start) || start, end: toDate(h.end) })).filter(h => h.planId && h.start);
     if (!hist.length) { droppedFans.push(f.name || id); continue; }
     if (start && start < hist[0].start) hist[0].start = start;
     if (endAt) hist.forEach(h => { if (h.end === null) h.end = endAt; });
@@ -478,10 +485,10 @@ function migrateV4(v4, today, ctx) {
   for (const h of v4.state.history || []) {
     const id = String(h.id);
     if (!data.fans[id]) continue;
-    add({ key: `tenure-${Number(h.months)}|${id}|${Number(h.months)}`, fanId: id, type: 'delivered', date: h.given || h.target, memo: [h.text, h.memo].filter(Boolean).join(' / ') || '' });
+    add({ key: `tenure-${Number(h.months)}|${id}|${Number(h.months)}`, fanId: id, type: 'delivered', date: toDate(h.given) || toDate(h.target) || today, memo: [h.text, h.memo].filter(Boolean).join(' / ') || '' });
   }
   const usedTickets = new Set();
-  for (const c of [...(v4.state.callHistory || [])].sort((a, b) => compare(a.date, b.date))) {
+  for (const c of [...(v4.state.callHistory || [])].map(c => ({ ...c, date: toDate(c.date) })).filter(c => c.date).sort((a, b) => compare(a.date, b.date))) {
     const fan = data.fans[String(c.id)];
     if (!fan) continue;
     const plan = planOn(fan, c.date);
@@ -506,7 +513,7 @@ function migrateV4(v4, today, ctx) {
       if (!ruleId) { droppedPerkChecks++; continue; }
       const rule = settings.rules.find(r => r.id === ruleId);
       const run = data.fans[fid].planHistory.find(h => rule.planIds.includes(h.planId));
-      if (run) add({ key: `${ruleId}|${fid}|${run.start}`, fanId: fid, type: 'delivered', date: v.date || today });
+      if (run) add({ key: `${ruleId}|${fid}|${run.start}`, fanId: fid, type: 'delivered', date: toDate(v.date) || today });
     }
   }
   // 引き継いだ人の、移行日より前に期限が来ていた入会時・通話・誕生日は「引継ぎ済み」にする（1件ずつ戻せる）
@@ -517,6 +524,19 @@ function migrateV4(v4, today, ctx) {
     add({ key: it.key, fanId: it.fanId, title: it.title, type: 'migrated', memo: 'v4から引継ぎ（渡し済み扱い）' });
   }
   return { data, report: { droppedFans, fans: Object.keys(data.fans).length, records: Object.keys(data.records).length, droppedPerkChecks, droppedSchedules: (v4.state.callSchedules || []).length } };
+}
+
+// v4の読み込みをやり直すとき：ファンは新しい内容で上書きし、前回の読み込みで作られた記録のうち今回ないものは取り消す。
+// v5で付けた記録（渡した・予定・次に回す など）はそのまま残す。
+function mergeV4Import(current, migrated, now) {
+  if (!current) return migrated;
+  const fresh = JSON.parse(JSON.stringify(migrated));
+  for (const f of Object.values(fresh.fans)) f.updatedAt = now;
+  const m = mergeData(current, fresh);
+  for (const r of Object.values(m.records)) {
+    if (r.id.includes('-v4-') && !fresh.records[r.id] && !r.deleted) Object.assign(r, { deleted: true, updatedAt: now });
+  }
+  return m;
 }
 
 // ---- storage.js
@@ -902,6 +922,8 @@ function itemRow(i) {
 
 function renderNotices(n) {
   const parts = [];
+  const bad = invalidDateFans(data);
+  if (bad.length) parts.push(`<div class="notice warn-strong">⚠ 日付が読めないファンが${bad.length}人います（${bad.slice(0, 5).map(fanName).map(h).join('、')}${bad.length > 5 ? ' ほか' : ''}）。この人たちの特典はリストに出ません。v4のデータをもう一度読み込んでください。</div>`);
   if (n.missingBirthday.length) parts.push(`<div class="notice">🎂 誕生日が未入力の人：${n.missingBirthday.map(id => `<button class="link fanlink" data-id="${h(id)}">${h(fanName(id))}</button>`).join('、')}</div>`);
   for (const u of n.undecidedMilestones) parts.push(`<div class="notice">⭐ もうすぐ${u.months}か月の人がいます（${u.memberNos.map(fanName).map(h).join('、')}）。${u.months}か月の特典を決めますか？ <button class="link" id="decide${u.months}">特典を決める</button></div>`);
   return parts.length ? `<section id="notices">${parts.join('')}</section>` : '';
@@ -1103,8 +1125,8 @@ function previewV4(v4) {
     ${report.droppedFans.length ? `<div class="notice small">プランが読み取れず引き継げないファン：${report.droppedFans.map(h).join('、')}</div>` : ''}
     ${report.droppedPerkChecks ? `<p class="small muted">新しい特典ルールに当てはまらないプラン特典のチェック ${report.droppedPerkChecks}件は引き継ぎません。</p>` : ''}
     ${report.droppedSchedules ? `<p class="small muted">v4の通話予定 ${report.droppedSchedules}件は引き継ぎません（必要なら「予定日」で入れ直してください）。</p>` : ''}
-    ${data ? '<p class="small">今のデータと合体させます。</p>' : ''}</div>`,
-    { ok: '読み込む', onOk: async () => { if (data) await storage.backup(data, 'v4'); return commit(data ? mergeData(data, migrated) : migrated); } });
+    ${data ? '<p class="small">前回の読み込み分は今回の内容で上書きします。v5で付けた「渡した」などの記録はそのまま残ります。</p>' : ''}</div>`,
+    { ok: '読み込む', onOk: async () => { if (data) await storage.backup(data, 'v4'); return commit(data ? mergeV4Import(data, migrated, new Date().toISOString()) : migrated); } });
 }
 
 // ---------- settings ----------
