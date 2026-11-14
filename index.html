@@ -83,6 +83,17 @@ table.roster{font-size:14.5px}table.roster th{font-size:12.5px}table.roster td{p
 table.roster td.nm{font-size:16px;font-weight:700;white-space:nowrap}table.roster td.nm .link{color:var(--ink);text-decoration:none}table.roster td.nm .link:hover{color:var(--wine);text-decoration:underline}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:9px;vertical-align:1px}
 .scroll.tall{max-height:calc(100vh - 260px)}
+
+#backToRoster{margin-bottom:10px;display:inline-block}
+.memberhead .mh-name{font-size:24px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.memberhead .mh-facts{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:8px;color:var(--muted);font-size:13px}.memberhead .mh-facts b{color:var(--ink);font-size:15px}
+.dot.big{width:16px;height:16px;margin-right:2px}
+.membergrid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;align-items:start}.mcol .panel{margin-bottom:12px}
+#memberUpcoming .item{grid-template-columns:90px 1fr auto}#memberUpcoming .item .who{display:none}
+#memo{width:100%;font:inherit;font-size:14px;padding:10px;border:1px solid #d8d0d6;border-radius:8px;resize:vertical}
+details summary{cursor:pointer;margin-top:10px}
+@media(max-width:860px){.membergrid{grid-template-columns:1fr}}
+#memberUpcoming .item.st-overdue{background:#fff3f1}#memberUpcoming .item.st-overdue .due{color:var(--warn)}#memberUpcoming .item.st-overdue .due::after{content:'期限切れ';display:block;font-size:10px;font-weight:700}
 </style>
 </head>
 <body>
@@ -350,7 +361,7 @@ function generate(data, today) {
 const live = data => Object.values(data.records).filter(r => !r.deleted);
 const latest = (rs) => rs.sort((a, b) => compare(a.updatedAt, b.updatedAt)).at(-1);
 
-function computeList(data, today) {
+function computeList(data, today, opts = {}) {
   const recs = live(data);
   const settled = new Set();
   for (const r of recs) {
@@ -383,8 +394,10 @@ function computeList(data, today) {
     hidden.add(i.key);
   }
   const limit = endOfMonth(addMonths(today, 1));
+  const until = opts.untilMonths ? addMonths(today, opts.untilMonths) : null;
   const order = { overdue: 0, thisMonth: 1, nextMonth: 2, later: 3 };
-  items = items.filter(i => !hidden.has(i.key) && (compare(i.due, limit) <= 0 || i.kind === 'extra')).map(i => {
+  items = items.filter(i => !hidden.has(i.key) && (!opts.fanId || i.fanId === opts.fanId)
+    && (compare(i.due, limit) <= 0 || i.kind === 'extra' || (until && compare(i.due, until) <= 0))).map(i => {
     const status = compare(i.due, today) < 0 ? 'overdue' : monthKey(i.due) === monthKey(today) ? 'thisMonth' : compare(i.due, limit) <= 0 ? 'nextMonth' : 'later';
     const { periodStart, ...rest } = i;
     return { ...rest, status };
@@ -484,9 +497,12 @@ function mergeFans(a = {}, b = {}) {
     const x = a[k], y = b[k];
     if (!x || !y) continue;
     const bx = x.birthdayUpdatedAt || '', by = y.birthdayUpdatedAt || '';
-    if (bx === by) continue;
-    const src = bx > by ? x : y;
-    out[k] = { ...out[k], birthday: src.birthday, birthdayUpdatedAt: src.birthdayUpdatedAt, birthdaySetOn: src.birthdaySetOn || out[k].birthdaySetOn };
+    if (bx !== by) {
+      const src = bx > by ? x : y;
+      out[k] = { ...out[k], birthday: src.birthday, birthdayUpdatedAt: src.birthdayUpdatedAt, birthdaySetOn: src.birthdaySetOn || out[k].birthdaySetOn };
+    }
+    const mx = x.memoUpdatedAt || '', my = y.memoUpdatedAt || '';
+    if (mx !== my) { const src = mx > my ? x : y; out[k] = { ...out[k], memo: src.memo, memoUpdatedAt: src.memoUpdatedAt }; }
   }
   return out;
 }
@@ -885,7 +901,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
+let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1013,12 +1029,12 @@ function render() {
   const list = computeList(data, today);
   const count = s => list.items.filter(i => i.status === s).length;
   const urgent = count('overdue') + count('thisMonth');
-  const title = (PAGES.find(p => p[0] === page) || PAGES[0])[2];
+  const title = page === 'member' ? '会員ページ' : (PAGES.find(p => p[0] === page) || PAGES[0])[2];
   $('#app').innerHTML = `
     <div class="shell">
       <aside class="side">
         <div class="club">${h(data.settings.clubName)}</div>
-        <nav>${PAGES.map(([k, ic, l]) => `<button class="nav ${page === k ? 'on' : ''}" data-page="${k}"><span class="ic">${ic}</span>${l}${k === 'perks' && urgent ? `<span class="cnt ${count('overdue') ? 'red' : ''}">${urgent}</span>` : ''}</button>`).join('')}</nav>
+        <nav>${PAGES.map(([k, ic, l]) => `<button class="nav ${page === k || (page === 'member' && k === 'members') ? 'on' : ''}" data-page="${k}"><span class="ic">${ic}</span>${l}${k === 'perks' && urgent ? `<span class="cnt ${count('overdue') ? 'red' : ''}">${urgent}</span>` : ''}</button>`).join('')}</nav>
         <div class="sidefoot">このPC：${h(storage.deviceName())}<br>CSVは画面のどこにでもドロップできます</div>
       </aside>
       <section class="mainarea">
@@ -1037,6 +1053,7 @@ function renderPage(list) {
   if (page === 'records') return `<section class="panel"><div id="tabContent">${renderRecords()}</div></section>`;
   if (page === 'revenue') return `<section class="panel"><div id="tabContent">${renderRevenue()}</div></section>`;
   if (page === 'settings') return renderSettings();
+  if (page === 'member') return renderMember();
   return renderDashboard(list);
 }
 
@@ -1098,7 +1115,7 @@ function itemRow(i) {
     i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
     i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : '',
     i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
-  return `<div class="item" data-key="${h(i.key)}" data-kind="${h(i.kind)}">
+  return `<div class="item st-${h(i.status)}" data-key="${h(i.key)}" data-kind="${h(i.kind)}">
     <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
     <div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
     <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
@@ -1208,7 +1225,8 @@ function wire(list) {
   document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
   document.querySelectorAll('.sortbtn').forEach(b => b.onclick = () => { listSort = b.dataset.sort; render(); });
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
-  const byKey = Object.fromEntries(list.items.map(i => [i.key, i]));
+  const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items : [];
+  const byKey = Object.fromEntries([...list.items, ...extraItems].map(i => [i.key, i]));
   document.querySelectorAll('#page .item').forEach(row => {
     const it = byKey[row.dataset.key];
     row.querySelector('.deliver').onclick = () => openDeliver(it);
@@ -1221,6 +1239,7 @@ function wire(list) {
   });
   for (const u of list.notices.undecidedMilestones) { const b = $('#decide' + u.months); if (b) b.onclick = () => openRuleEditor(null, { kind: 'tenure', months: u.months }); }
   if (page === 'settings') wireSettings();
+  if (page === 'member') wireMember();
   wireTab();
 }
 
@@ -1280,30 +1299,79 @@ function openCarry(it) {
 }
 
 function openFan(id) {
-  setTimeout(() => document.querySelectorAll('#dlg .unmig').forEach(b => b.onclick = () => { $('#dlg').close(); commit(removeRecord(data, b.dataset.id, ctx())); }), 0);
-  const f = data.fans[id];
-  const recs = Object.values(data.records).filter(r => r.fanId === id && !r.deleted && (r.type === 'delivered' || r.type === 'dismissed')).sort((a, b) => compare(b.date || '', a.date || ''));
-  const migrated = Object.values(data.records).filter(r => r.fanId === id && !r.deleted && r.type === 'migrated');
-  const [bm, bd] = (f.birthday || '-').split('-');
-  openDialog(f.name, `
-    <p>${badge(planOn(f, today) || f.planHistory.at(-1).planId)} ${STATUS_LABEL[f.status]}　在籍 ${tenureMonths(f)}か月　会員番号 ${h(f.memberNo)}${/^https?:\/\//i.test(f.profileUrl || '') ? `　<a href="${h(f.profileUrl)}" target="_blank" rel="noopener">プロフィール</a>` : ''}</p>
-    <div class="field">誕生日 <select name="bm"><option value="">-</option>${Array.from({ length: 12 }, (_, i) => `<option ${Number(bm) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>月
-      <select name="bd"><option value="">-</option>${Array.from({ length: 31 }, (_, i) => `<option ${Number(bd) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>日</div>
-    <h4>プランの変遷</h4><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
-    <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul>
-    <h4>渡した記録</h4>${recs.length ? `<ul class="plain">${recs.map(r => `<li>${r.type === 'dismissed' ? '対象外' : ymd(r.date)}　${h(recordTitle(r))}${r.memo ? `　<span class="muted">${h(r.memo)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="muted">まだありません</p>'}
-    ${migrated.length ? `<h4>v4から引継ぎ（渡し済み扱い）</h4><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul>` : ''}`, {
-    ok: '保存', wide: true, onOk: dl => {
-      const m = dl.querySelector('[name=bm]').value, d = dl.querySelector('[name=bd]').value;
-      const bday = m && d ? `${m.padStart(2, '0')}-${d.padStart(2, '0')}` : null;
-      if (bday === f.birthday) return;
-      const next = JSON.parse(JSON.stringify(data));
-      next.fans[id].birthday = bday;
-      next.fans[id].birthdayUpdatedAt = new Date().toISOString();
-      if (bday && !next.fans[id].birthdaySetOn) next.fans[id].birthdaySetOn = today;
-      return commit(touchFan(next, id));
-    },
+  if (!data.fans[id]) return;
+  memberId = id; page = 'member'; render(); window.scrollTo(0, 0);
+}
+
+function renderMember() {
+  const f = data.fans[memberId];
+  if (!f) return '<div class="empty">この会員は見つかりません</div>';
+  const plan = planOn(f, today) || f.planHistory.at(-1).planId;
+  const up = computeList(data, today, { fanId: f.memberNo, untilMonths: 12 }).items;
+  // 毎月・3か月ごとの通話券は、先の分を1件だけ見せて残りはまとめる
+  const seenRule = {}, folded = {};
+  const upSorted = sortItems(up, 'due', fanName).filter(i => {
+    if (i.kind !== 'interval' || i.status !== 'later') return true;
+    if (!seenRule[i.ruleId]) { seenRule[i.ruleId] = true; return true; }
+    folded[i.title] = (folded[i.title] || 0) + 1; return false;
   });
+  const foldNote = Object.entries(folded).map(([t, n]) => `<p class="muted small more">${h(t)}：ほか${n}回（1年先まで）</p>`).join('');
+  const recs = Object.values(data.records).filter(r => r.fanId === f.memberNo && !r.deleted && (r.type === 'delivered' || r.type === 'dismissed'))
+    .sort((a, b) => compare(b.date || b.updatedAt, a.date || a.updatedAt));
+  const migrated = Object.values(data.records).filter(r => r.fanId === f.memberNo && !r.deleted && r.type === 'migrated');
+  const [bm, bd] = (f.birthday || '-').split('-');
+  const next = data.settings.rules.filter(r => r.kind === 'tenure').map(r => reachDate(f, r.months)).filter(d => d && compare(d, today) >= 0).sort()[0];
+  return `<div id="memberPage">
+    <button class="link" id="backToRoster">← 会員名簿に戻る</button>
+    <section class="panel memberhead">
+      <div class="mh-name"><span class="dot big" style="background:${PLAN_COLORS[plan] || '#999'}"></span>${h(f.name)} ${badge(plan)} <span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></div>
+      <div class="mh-facts"><span>在籍 <b>${tenureMonths(f)}か月</b></span><span>会員番号 <b>${h(f.memberNo)}</b></span>${next ? `<span>次の継続特典 <b>${ymd(next)}</b></span>` : ''}${/^https?:\/\//i.test(f.profileUrl || '') ? `<a href="${h(f.profileUrl)}" target="_blank" rel="noopener">プロフィール ↗</a>` : ''}
+        ${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</div>
+    </section>
+    <div class="membergrid">
+      <div class="mcol">
+        <section class="panel"><h2>🎁 今後の特典</h2><p class="muted small">期限切れと、これから1年分</p>
+          <div id="memberUpcoming">${upSorted.length ? upSorted.map(itemRow).join('') + foldNote : '<div class="empty">今後1年の特典はありません</div>'}</div></section>
+        <section class="panel"><h2>✅ 渡し済みの特典</h2>${recs.length ? `<table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
+            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
+            <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">まだありません</p>'}
+          ${migrated.length ? `<details><summary class="small muted">v4から引継ぎ（渡し済み扱い）${migrated.length}件</summary><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul></details>` : ''}</section>
+      </div>
+      <div class="mcol">
+        <section class="panel"><h2>🎂 誕生日</h2>
+          <div class="field"><select name="bm"><option value="">-</option>${Array.from({ length: 12 }, (_, i) => `<option ${Number(bm) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>月
+            <select name="bd"><option value="">-</option>${Array.from({ length: 31 }, (_, i) => `<option ${Number(bd) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>日
+            <button class="btn small primary" id="saveBirthday">保存</button></div></section>
+        <section class="panel"><h2>📝 メモ</h2>
+          <textarea id="memo" rows="7" placeholder="好きなもの、配送の注意、話した内容など">${h(f.memo || '')}</textarea>
+          <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="muted small" id="memoState"></span><button class="btn small primary" id="saveMemo">保存</button></div></section>
+        <section class="panel"><h2>📈 プランの変遷</h2><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
+          <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></section>
+      </div>
+    </div></div>`;
+}
+
+function wireMember() {
+  const f = data.fans[memberId];
+  if (!f) return;
+  $('#backToRoster').onclick = () => { page = 'members'; render(); };
+  $('#saveBirthday').onclick = () => {
+    const m = $('#page [name=bm]').value, d = $('#page [name=bd]').value;
+    const bday = m && d ? `${m.padStart(2, '0')}-${d.padStart(2, '0')}` : null;
+    if (bday === f.birthday) return;
+    const next = JSON.parse(JSON.stringify(data));
+    Object.assign(next.fans[memberId], { birthday: bday, birthdayUpdatedAt: new Date().toISOString() });
+    if (bday && !next.fans[memberId].birthdaySetOn) next.fans[memberId].birthdaySetOn = today;
+    commit(touchFan(next, memberId));
+  };
+  const memo = $('#memo'), state = $('#memoState');
+  memo.oninput = () => { state.textContent = '未保存'; };
+  $('#saveMemo').onclick = () => {
+    const next = JSON.parse(JSON.stringify(data));
+    Object.assign(next.fans[memberId], { memo: memo.value, memoUpdatedAt: new Date().toISOString() });
+    commit(touchFan(next, memberId));
+  };
+  document.querySelectorAll('#page .unmig').forEach(b => b.onclick = () => commit(removeRecord(data, b.dataset.id, ctx())));
 }
 
 // ---------- files ----------
