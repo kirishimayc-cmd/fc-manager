@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://accounts.google.com https://www.gstatic.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://www.googleapis.com https://content.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com https://docs.google.com https://drive.google.com https://content.googleapis.com">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>ファンクラブ管理ツール</title>
+<style>:root{--wine:#8e2443;--wine-soft:#f8eef1;--ink:#26222a;--muted:#77707c;--line:#ebe5ea;--bg:#faf7f8;--warn:#b42318;font-family:system-ui,"Segoe UI","Yu Gothic UI",sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}body{margin:0;padding:14px 18px 30px;max-width:1180px;margin:auto}
+h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:4px 0 10px}h4{font-size:14px;margin:16px 0 6px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 10px}
+.brand b{font-size:17px;color:var(--wine);margin-right:12px}.sum{color:var(--muted);font-size:13px}.sum i{font-style:normal;margin:0 6px;color:#cfc8cf}.sum .warn{color:var(--warn);font-weight:700}
+.actions,.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid transparent;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--wine);color:#fff}.btn.primary:hover{filter:brightness(1.1)}.btn.ghost{background:#fff;border-color:#ddd5db;color:var(--ink)}.btn.ghost:hover{background:var(--wine-soft)}
+.btn.danger{background:var(--warn);color:#fff}.btn.small{padding:4px 9px;font-size:12px}.btn.big{padding:11px 20px;font-size:15px}
+.link{background:none;border:0;padding:0;color:var(--wine);text-decoration:underline;cursor:pointer;font:inherit}
+.group{margin-top:6px}.glabel{font-size:12px;font-weight:700;color:var(--muted);padding:8px 2px 4px;border-bottom:1px solid var(--line)}.glabel span{margin-left:6px;background:#eee;border-radius:9px;padding:0 7px}
+.group.overdue .glabel{color:var(--warn)}.group.overdue .glabel span{background:#fde7e5;color:var(--warn)}
+.item{display:grid;grid-template-columns:minmax(150px,1.1fr) 2fr 70px auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid #f3eff2}
+.item:hover{background:#fdfafb}.who{font-weight:600}.due{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}.group.overdue .due{color:var(--warn);font-weight:700}.btns{display:flex;gap:6px;justify-content:flex-end}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:4px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);vertical-align:1px}
+.tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:#eef3fb;color:#2f5aa0}.tag.strong{background:#fff1d6;color:#8a5a00;font-weight:700}.tag.gray{background:#eee;color:#666}
+.empty{color:var(--muted);text-align:center;padding:22px}
+#notices .notice,.notice{background:#fff8e6;border:1px solid #f3dfae;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:13px}
+.banner{background:#eef5ff;border:1px solid #c7dbf7;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px;display:flex;justify-content:space-between}.banner .x{border:0;background:none;cursor:pointer}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 10px}.tab{border:0;background:none;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}.tab.on{color:var(--wine);border-bottom-color:var(--wine);font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.chip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;cursor:pointer}.chip.on{background:var(--wine);color:#fff;border-color:var(--wine)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 8px;border-bottom:1px solid #f1ecf0;text-align:left;vertical-align:middle}th{color:var(--muted);font-weight:600;font-size:12px;position:sticky;top:0;background:#fff}
+.scroll{max-height:460px;overflow:auto}.scroll.short{max-height:360px}.r{text-align:right}.num{color:var(--muted);font-variant-numeric:tabular-nums}.nowrap{white-space:nowrap}.nowrap .btn{margin-left:4px}.total td{border-top:2px solid var(--line)}
+.muted{color:var(--muted)}.small{font-size:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:16px}
+.gate{max-width:560px;margin:70px auto;text-align:center;padding:30px}.gate p{line-height:1.8}.gate .row{justify-content:center;margin-top:16px}
+dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);box-shadow:0 20px 60px #0003}dialog.wide{width:min(640px,94vw)}dialog::backdrop{background:#2a1a2266}
+dialog form{padding:18px 20px}.dlg-body{max-height:65vh;overflow:auto}.dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+label{display:block;font-size:13px;font-weight:600;margin:8px 0}label input,label select{display:block;width:100%;margin-top:4px}
+input,select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid #d8d0d6;border-radius:8px}label.inline{display:inline-flex;align-items:center;gap:4px;margin:4px 12px 4px 0;font-weight:500}label.inline input{width:auto;display:inline;margin:0}
+label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:8px;font-weight:500}label.inline-wide input{margin:0}
+.field{font-size:13px;font-weight:600;margin:8px 0}.field select{width:auto;display:inline-block;margin:0 4px}ul.plain{margin:0;padding-left:18px;font-size:13px;line-height:1.8}
+.dropcover{display:none}body.dragging .dropcover{display:flex;position:fixed;inset:10px;border:3px dashed var(--wine);border-radius:16px;background:#fff9;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--wine);pointer-events:none;z-index:10}
+@media(max-width:760px){.item{grid-template-columns:1fr auto}.what{grid-column:1/-1}.btns{grid-column:1/-1;justify-content:flex-start}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div id="app"><div class="gate panel"><p>読み込み中…</p></div></div>
+<input type="file" id="csvInput" accept=".csv,.json,text/csv,application/json" hidden>
+<dialog id="dlg"></dialog>
+<div class="dropcover">ここにドロップして読み込み</div>
+<script>(function(){
+// ---- config.js
+// Google Cloud の値（ページに埋め込む前提の公開値。APIキーは github.io と Picker API に制限済み）
+const GOOGLE = {
+  clientId: '568003808881-9n9e56utr7cbptlt6ttlj9sdd8j75ejm.apps.googleusercontent.com',
+  apiKey: 'AIzaSyB_22IXr8yX3GkkVFp6Jkn2IsGD9zW5d4k',
+  appId: '568003808881',
+};
+
+// ---- dates.js
+const pad = n => String(n).padStart(2, '0');
+const fmt = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+const parts = s => s.split('-').map(Number);
+const daysIn = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+
+function toDate(s) {
+  const [y, m, d] = String(s).trim().split(/[\/-]/).map(Number);
+  return fmt(y, m, d);
+}
+function addMonths(d, n) {
+  const [y, m, day] = parts(d);
+  const t = y * 12 + (m - 1) + n, ny = Math.floor(t / 12), nm = t - ny * 12 + 1;
+  return fmt(ny, nm, Math.min(day, daysIn(ny, nm)));
+}
+function addDays(d, n) {
+  const [y, m, day] = parts(d);
+  const x = new Date(Date.UTC(y, m - 1, day + n));
+  return fmt(x.getUTCFullYear(), x.getUTCMonth() + 1, x.getUTCDate());
+}
+function daysBetween(a, b) {
+  const [y1, m1, d1] = parts(a), [y2, m2, d2] = parts(b);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
+}
+function diffMonthsDays(a, b) {
+  let months = 0;
+  while (compare(addMonths(a, months + 1), b) <= 0) months++;
+  return { months, days: daysBetween(addMonths(a, months), b) };
+}
+const monthKey = d => d.slice(0, 7);
+const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+function endOfMonth(d) { const [y, m] = parts(d); return fmt(y, m, daysIn(y, m)); }
+function todayLocal() { const x = new Date(); return fmt(x.getFullYear(), x.getMonth() + 1, x.getDate()); }
+
+// ---- defaults.js
+const PLAN_DEFS = [
+  ['toriko', '虜プラン', 500], ['keiai', '敬愛プラン', 3000], ['suuhai', '崇拝プラン', 5000],
+  ['ketsuniku', '血肉プラン', 10000], ['kyoai', '狂愛プラン', 30000],
+];
+function defaultSettings() {
+  const plans = PLAN_DEFS.map(([id, name, price], order) => ({ id, name, price, order }));
+  const all = plans.map(p => p.id);
+  return {
+    clubName: '生稚くれあファンクラブ',
+    plans,
+    rules: [
+      { id: 'discord', kind: 'join', planIds: all, label: 'FCサーバー招待' },
+      { id: 'kagiaka', kind: 'join', planIds: ['ketsuniku', 'kyoai'], label: '鍵垢X公開' },
+      { id: 'call-ketsuniku', kind: 'interval', planIds: ['ketsuniku'], months: 3, label: '10分通話 or 名前呼びシチュボ', variants: ['通話', 'シチュボ'] },
+      { id: 'call-kyoai', kind: 'interval', planIds: ['kyoai'], months: 1, label: '1時間通話券' },
+      { id: 'birthday', kind: 'birthday', planIds: ['ketsuniku', 'kyoai'], label: 'お誕生日ビデオレター' },
+      { id: 'tenure-12', kind: 'tenure', planIds: all, months: 12, label: '12か月継続特典',
+        labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' } },
+    ],
+    updatedAt: '1970-01-01T00:00:00.000Z',
+  };
+}
+function emptyData() {
+  return { version: 5, settings: defaultSettings(), fans: {}, records: {}, meta: { migratedAt: null, lastSavedBy: '', lastSavedAt: '' } };
+}
+const planById = (s, id) => s.plans.find(p => p.id === id);
+const planByName = (s, name) => s.plans.find(p => p.name === String(name).trim());
+
+// ---- csv.js
+
+function csvRecords(text) {
+  const out = []; let row = [], f = '', q = false;
+  text = text.replace(/^﻿/, '');
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { f += '"'; i++; }
+      else if (c === '"') q = false;
+      else f += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(f); out.push(row); row = []; f = '';
+    } else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); out.push(row); }
+  return out.filter(r => r.some(x => x.trim() !== ''));
+}
+
+const COLS = { planName: 'プラン名', name: 'ユーザー名', planJoinDate: '現在のプランの加入日', profileUrl: 'プロフィールページURL', memberNo: '会員番号' };
+
+function parseCreatiaCsv(text) {
+  const recs = csvRecords(text);
+  const head = (recs.shift() || []).map(h => h.trim());
+  const idx = Object.fromEntries(Object.entries(COLS).map(([k, h]) => [k, head.indexOf(h)]));
+  const missing = Object.entries(idx).filter(([, i]) => i < 0).map(([k]) => COLS[k]);
+  if (missing.length) return { rows: [], skipped: [{ line: 1, reason: '列が見つかりません：' + missing.join('、') }] };
+  const rows = [], skipped = [];
+  recs.forEach((r, n) => {
+    const get = k => (r[idx[k]] || '').trim();
+    const line = n + 2;
+    if (!get('memberNo')) return skipped.push({ line, reason: '会員番号が空です' });
+    if (!/^\d{4}[\/-]\d{1,2}[\/-]\d{1,2}$/.test(get('planJoinDate'))) return skipped.push({ line, memberNo: get('memberNo'), reason: '加入日が読めません' });
+    rows.push({ memberNo: get('memberNo'), name: get('name'), planName: get('planName'), planJoinDate: toDate(get('planJoinDate')), profileUrl: get('profileUrl') });
+  });
+  return { rows, skipped };
+}
+
+// ---- fans.js
+
+const nowIso = () => new Date().toISOString();
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function applyCsv(data, rows, today, keepMemberNos = []) {
+  data = clone(data);
+  const summary = { added: [], leftCandidates: [], rejoined: [], planChanged: [], skipped: [] };
+  const seen = new Set(keepMemberNos), done = new Set();
+  for (const r of rows) {
+    const plan = planByName(data.settings, r.planName);
+    if (!plan) { seen.add(r.memberNo); summary.skipped.push({ memberNo: r.memberNo, reason: '不明なプラン：' + r.planName }); continue; }
+    if (done.has(r.memberNo)) { summary.skipped.push({ memberNo: r.memberNo, reason: '会員番号が重複しています' }); continue; }
+    seen.add(r.memberNo); done.add(r.memberNo);
+    let f = data.fans[r.memberNo];
+    if (!f) {
+      data.fans[r.memberNo] = { memberNo: r.memberNo, name: r.name, profileUrl: r.profileUrl, birthday: null, status: 'active',
+        periods: [{ start: r.planJoinDate, end: null }], planHistory: [{ planId: plan.id, start: r.planJoinDate, end: null }], updatedAt: nowIso() };
+      summary.added.push(r.memberNo); continue;
+    }
+    let touched = false;
+    if (f.name !== r.name || f.profileUrl !== r.profileUrl) { f.name = r.name; f.profileUrl = r.profileUrl; touched = true; }
+    if (f.status === 'left') {
+      f.periods.push({ start: r.planJoinDate, end: null });
+      f.planHistory.push({ planId: plan.id, start: r.planJoinDate, end: null });
+      f.status = 'active'; summary.rejoined.push(r.memberNo); touched = true;
+    } else {
+      if (f.status === 'leftCandidate') { f.status = 'active'; touched = true; }
+      const open = f.planHistory.find(h => h.end === null);
+      if (open && open.planId !== plan.id) {
+        open.end = addDays(r.planJoinDate, -1);
+        f.planHistory.push({ planId: plan.id, start: r.planJoinDate, end: null });
+        summary.planChanged.push(r.memberNo); touched = true;
+      }
+    }
+    if (touched) f.updatedAt = nowIso();
+  }
+  for (const f of Object.values(data.fans)) {
+    if (f.status === 'active' && !seen.has(f.memberNo)) {
+      f.status = 'leftCandidate'; f.updatedAt = nowIso(); summary.leftCandidates.push(f.memberNo);
+    }
+  }
+  return { data, summary };
+}
+
+function confirmLeft(data, memberNo, date) {
+  data = clone(data);
+  const f = data.fans[memberNo];
+  f.status = 'left';
+  f.periods.forEach(p => { if (p.end === null) p.end = date; });
+  f.planHistory.forEach(h => { if (h.end === null) h.end = date; });
+  f.updatedAt = nowIso();
+  return data;
+}
+
+// ---- tenure.js
+
+function reachDate(fan, months) {
+  let accM = 0, accD = 0;
+  for (const p of fan.periods) {
+    const cand = addDays(addMonths(p.start, months - accM), -accD);
+    if (p.end === null || compare(cand, p.end) <= 0) return cand;
+    const d = diffMonthsDays(p.start, p.end);
+    accM += d.months; accD += d.days;
+  }
+  return null;
+}
+
+function planOn(fan, date) {
+  const h = fan.planHistory.find(h => compare(h.start, date) <= 0 && (h.end === null || compare(date, h.end) <= 0));
+  return h ? h.planId : null;
+}
+
+function eligibleSince(fan, planIds, asOf) {
+  const hs = fan.planHistory.filter(h => compare(h.start, asOf) <= 0);
+  let i = hs.length - 1;
+  if (i < 0 || !planIds.includes(hs[i].planId)) return null;
+  while (i > 0 && planIds.includes(hs[i - 1].planId) && hs[i - 1].end && addDays(hs[i - 1].end, 1) === hs[i].start) i--;
+  return hs[i].start;
+}
+
+// ---- obligations.js
+
+function eligibleRuns(fan, planIds) {
+  const runs = [];
+  for (const h of fan.planHistory) {
+    if (!planIds.includes(h.planId)) continue;
+    const last = runs.at(-1);
+    if (last && last.end && addDays(last.end, 1) === h.start) last.end = h.end;
+    else runs.push({ start: h.start, end: h.end });
+  }
+  return runs;
+}
+
+function intervalTickets(fan, rule, horizon) {
+  const out = [];
+  for (const run of eligibleRuns(fan, rule.planIds)) {
+    for (let k = 0; ; k++) {
+      const ps = addMonths(run.start, k * rule.months);
+      if (compare(ps, horizon) > 0 || (run.end && compare(ps, run.end) > 0)) break;
+      out.push({ key: `${rule.id}|${fan.memberNo}|${ps}`, periodStart: ps, due: addDays(addMonths(run.start, (k + 1) * rule.months), -1) });
+    }
+  }
+  return out;
+}
+
+const birthdayOn = (year, mmdd) => {
+  const [m, d] = mmdd.split('-').map(Number);
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  return `${year}-${String(m).padStart(2, '0')}-${String(m === 2 && d === 29 && !leap ? 28 : d).padStart(2, '0')}`;
+};
+
+function generate(data, today) {
+  const items = [];
+  const horizon = addMonths(today, 13);
+  for (const fan of Object.values(data.fans)) {
+    const base = { fanId: fan.memberNo, fanLeft: fan.status === 'left', count: 1, coversKeys: [], scheduled: false };
+    for (const rule of data.settings.rules) {
+      const push = (key, due, title) => items.push({ ...base, key, ruleId: rule.id, kind: rule.kind, title, due });
+      if (rule.kind === 'join') {
+        for (const run of eligibleRuns(fan, rule.planIds)) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
+      } else if (rule.kind === 'interval') {
+        for (const t of intervalTickets(fan, rule, horizon)) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.label, due: t.due, periodStart: t.periodStart });
+      } else if (rule.kind === 'birthday') {
+        if (!fan.birthday) continue;
+        for (const run of eligibleRuns(fan, rule.planIds)) {
+          for (let y = Number(run.start.slice(0, 4)); y <= Number(today.slice(0, 4)) + 1; y++) {
+            const d = birthdayOn(y, fan.birthday);
+            if (compare(d, run.start) >= 0 && (!run.end || compare(d, run.end) <= 0)) push(`${rule.id}|${fan.memberNo}|${y}`, d, rule.label);
+          }
+        }
+      } else if (rule.kind === 'tenure') {
+        const due = reachDate(fan, rule.months);
+        if (!due) continue;
+        const plan = planOn(fan, due);
+        if (!plan || !rule.planIds.includes(plan)) continue;
+        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, `${rule.months}か月継続：${(rule.labelByPlan && rule.labelByPlan[plan]) || rule.label}`);
+      }
+    }
+  }
+  return items;
+}
+
+const live = data => Object.values(data.records).filter(r => !r.deleted);
+const latest = (rs) => rs.sort((a, b) => compare(a.updatedAt, b.updatedAt)).at(-1);
+
+function computeList(data, today) {
+  const recs = live(data);
+  const settled = new Set();
+  for (const r of recs) {
+    if (r.type === 'delivered' || r.type === 'dismissed' || r.type === 'migrated') settled.add(r.key);
+    if (r.type === 'delivered') (r.coversKeys || []).forEach(k => settled.add(k));
+  }
+  const byKey = new Map(), carries = new Map(), schedules = new Map();
+  for (const r of recs) {
+    if (r.type === 'carry') carries.set(r.key, latest([...(carries.has(r.key) ? [carries.get(r.key)] : []), r]));
+    if (r.type === 'schedule') schedules.set(r.key, latest([...(schedules.has(r.key) ? [schedules.get(r.key)] : []), r]));
+  }
+  let items = generate(data, today).filter(i => !settled.has(i.key));
+  items.forEach(i => byKey.set(i.key, i));
+  for (const i of items) {
+    const s = schedules.get(i.key);
+    if (s && s.scheduledDate) { i.due = s.scheduledDate; i.scheduled = true; }
+  }
+  items.sort((a, b) => compare(a.periodStart || a.due, b.periodStart || b.due));
+  const hidden = new Set();
+  for (const i of items) {
+    const c = carries.get(i.key);
+    if (!c) continue;
+    const target = byKey.get(c.carryTo);
+    if (!target) continue;
+    target.count += i.count;
+    target.coversKeys.push(i.key, ...i.coversKeys);
+    hidden.add(i.key);
+  }
+  const limit = endOfMonth(addMonths(today, 1));
+  const order = { overdue: 0, thisMonth: 1, nextMonth: 2 };
+  items = items.filter(i => !hidden.has(i.key) && compare(i.due, limit) <= 0).map(i => {
+    const status = compare(i.due, today) < 0 ? 'overdue' : monthKey(i.due) === monthKey(today) ? 'thisMonth' : 'nextMonth';
+    const { periodStart, ...rest } = i;
+    return { ...rest, status };
+  }).sort((a, b) => order[a.status] - order[b.status] || compare(a.due, b.due) || compare(a.fanId, b.fanId));
+
+  const active = Object.values(data.fans).filter(f => f.status !== 'left');
+  const bdRules = data.settings.rules.filter(r => r.kind === 'birthday');
+  const missingBirthday = active.filter(f => !f.birthday && bdRules.some(r => r.planIds.includes(planOn(f, today)))).map(f => f.memberNo);
+  const decided = new Set(data.settings.rules.filter(r => r.kind === 'tenure').map(r => r.months));
+  const soon = addMonths(today, 1);
+  const undecidedMilestones = [24, 36].filter(m => !decided.has(m)).map(months => ({
+    months, memberNos: active.filter(f => { const d = reachDate(f, months); return d && compare(d, soon) <= 0; }).map(f => f.memberNo),
+  })).filter(x => x.memberNos.length);
+  return { items, notices: { missingBirthday, undecidedMilestones } };
+}
+
+function nextIntervalKey(data, key) {
+  const [ruleId, fanId, ps] = key.split('|');
+  const rule = data.settings.rules.find(r => r.id === ruleId), fan = data.fans[fanId];
+  if (!rule || !fan) return null;
+  const ts = intervalTickets(fan, rule, addMonths(ps, rule.months * 2));
+  const i = ts.findIndex(t => t.periodStart === ps);
+  return i >= 0 && ts[i + 1] ? ts[i + 1].key : null;
+}
+
+function intervalTicketsFor(fan, rule, horizon) { return intervalTickets(fan, rule, horizon); }
+
+// ---- records.js
+
+const copyData = d => JSON.parse(JSON.stringify(d));
+const newId = device => `${device}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+function addRecord(data, fields, ctx) {
+  data = copyData(data);
+  let id = newId(ctx.device);
+  while (data.records[id]) id = newId(ctx.device);
+  data.records[id] = { id, ...fields, device: ctx.device, updatedAt: ctx.now, deleted: false };
+  return data;
+}
+
+const deliver = (data, item, { date, memo = '', variant = '', minutes = null }, ctx) =>
+  addRecord(data, { key: item.key, fanId: item.fanId, title: item.title || '', type: 'delivered', date, memo, variant, minutes, coversKeys: [...(item.coversKeys || [])] }, ctx);
+
+const dismiss = (data, item, memo, ctx) =>
+  addRecord(data, { key: item.key, fanId: item.fanId, title: item.title || '', type: 'dismissed', memo: memo || '' }, ctx);
+
+const schedule = (data, key, fanId, scheduledDate, ctx) =>
+  addRecord(data, { key, fanId, type: 'schedule', scheduledDate }, ctx);
+
+const carry = (data, key, fanId, ctx) =>
+  addRecord(data, { key, fanId, type: 'carry', carryTo: nextIntervalKey(data, key) }, ctx);
+
+function removeRecord(data, recordId, ctx) {
+  data = copyData(data);
+  Object.assign(data.records[recordId], { deleted: true, updatedAt: ctx.now, device: ctx.device });
+  return data;
+}
+
+function editRecord(data, recordId, patch, ctx) {
+  data = copyData(data);
+  Object.assign(data.records[recordId], patch, { updatedAt: ctx.now, device: ctx.device });
+  return data;
+}
+
+// ---- merge.js
+const deep = o => JSON.parse(JSON.stringify(o));
+function newer(x, y) {
+  if (!x) return y; if (!y) return x;
+  const a = x.updatedAt || '', b = y.updatedAt || '';
+  if (a !== b) return a > b ? x : y;
+  return JSON.stringify(x) >= JSON.stringify(y) ? x : y;
+}
+function mergeMap(a = {}, b = {}) {
+  const out = {};
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) out[k] = newer(a[k], b[k]);
+  return out;
+}
+function mergeFans(a = {}, b = {}) {
+  const out = mergeMap(a, b);
+  for (const k of Object.keys(out)) {
+    const x = a[k], y = b[k];
+    if (!x || !y) continue;
+    const bx = x.birthdayUpdatedAt || '', by = y.birthdayUpdatedAt || '';
+    if (bx === by) continue;
+    const src = bx > by ? x : y;
+    out[k] = { ...out[k], birthday: src.birthday, birthdayUpdatedAt: src.birthdayUpdatedAt };
+  }
+  return out;
+}
+function mergeData(a, b) {
+  if (!a) return deep(b); if (!b) return deep(a);
+  const ma = a.meta || {}, mb = b.meta || {};
+  const mig = [ma.migratedAt, mb.migratedAt].filter(Boolean).sort()[0] || null;
+  const saver = (ma.lastSavedAt || '') >= (mb.lastSavedAt || '') ? ma : mb;
+  return deep({
+    version: 5,
+    settings: newer(a.settings, b.settings),
+    fans: mergeFans(a.fans, b.fans),
+    records: mergeMap(a.records, b.records),
+    meta: { migratedAt: mig, lastSavedBy: saver.lastSavedBy || '', lastSavedAt: saver.lastSavedAt || '' },
+  });
+}
+
+// ---- migrate-v4.js
+
+function migrateV4(v4, today, ctx) {
+  if (!v4 || !v4.config || !v4.state || typeof v4.state.fans !== 'object') throw new Error('v4の書き出しファイルではありません');
+  const settings = defaultSettings();
+  if (v4.config.clubName) settings.clubName = v4.config.clubName;
+  settings.updatedAt = ctx.now;
+  const v4Plans = v4.config.plans || [];
+  const toPlanId = raw => {
+    const s = String(raw || '');
+    const name = (v4Plans.find(p => p.id === s) || {}).name || s;
+    const p = planByName(settings, name) || settings.plans.find(p => name.includes(p.name.replace(/プラン$/, '')));
+    return p ? p.id : null;
+  };
+  const data = { version: 5, settings, fans: {}, records: {}, meta: { migratedAt: today, lastSavedBy: ctx.device, lastSavedAt: ctx.now } };
+  let seq = 0;
+  const add = r => { const id = `${ctx.device}-v4-${(seq++).toString(36)}`; data.records[id] = { id, device: ctx.device, updatedAt: ctx.now, deleted: false, memo: '', ...r }; };
+
+  const droppedFans = [];
+  for (const f of Object.values(v4.state.fans)) {
+    const id = String(f.id);
+    const start = f.continuityStartDate || f.join || f.planJoinDate;
+    const status = f.status === 'left' ? 'left' : f.status === 'candidate' ? 'leftCandidate' : 'active';
+    const endAt = status === 'left' ? (f.leftDate || today) : null;
+    let hist = (Array.isArray(f.planHistory) && f.planHistory.length ? f.planHistory : [{ plan: f.plan, start: f.planJoinDate || start, end: null }])
+      .map(h => ({ planId: toPlanId(h.plan), start: h.start, end: h.end || null })).filter(h => h.planId);
+    if (!hist.length) { droppedFans.push(f.name || id); continue; }
+    if (start && start < hist[0].start) hist[0].start = start;
+    if (endAt) hist.forEach(h => { if (h.end === null) h.end = endAt; });
+    data.fans[id] = { memberNo: id, name: f.name || '', profileUrl: f.url || '', birthday: null, status,
+      periods: [{ start: hist[0].start, end: endAt }], planHistory: hist, updatedAt: ctx.now };
+  }
+
+  for (const h of v4.state.history || []) {
+    const id = String(h.id);
+    if (!data.fans[id]) continue;
+    add({ key: `tenure-${Number(h.months)}|${id}|${Number(h.months)}`, fanId: id, type: 'delivered', date: h.given || h.target, memo: [h.text, h.memo].filter(Boolean).join(' / ') || '' });
+  }
+  const usedTickets = new Set();
+  for (const c of [...(v4.state.callHistory || [])].sort((a, b) => compare(a.date, b.date))) {
+    const fan = data.fans[String(c.id)];
+    if (!fan) continue;
+    const plan = planOn(fan, c.date);
+    const rule = settings.rules.find(r => r.kind === 'interval' && r.planIds.includes(plan));
+    if (!rule) continue;
+    // 期間内の通話はその期間の券。期間が始まって14日以内で、前の券が未使用なら「遅れた前回分」とみなす
+    const ts = intervalTicketsFor(fan, rule, c.date).filter(t => compare(t.periodStart, c.date) <= 0);
+    let t = ts.at(-1), prev = ts.at(-2);
+    if (t && prev && !usedTickets.has(prev.key) && compare(c.date, addDays(t.periodStart, 14)) < 0) t = prev;
+    if (!t || usedTickets.has(t.key)) continue;
+    usedTickets.add(t.key);
+    add({ key: t.key, fanId: fan.memberNo, type: 'delivered', date: c.date, minutes: Number(c.minutes) || null, memo: c.memo || '' });
+  }
+  let droppedPerkChecks = 0;
+  const benefitName = (planKey, bid) => ((v4.state.planBenefits || {})[planKey] || []).find(b => b.id === bid);
+  for (const [fid, recs] of Object.entries(v4.state.perkRecords || {})) {
+    for (const [k, v] of Object.entries(recs || {})) {
+      if (!v || !v.given || !data.fans[fid]) continue;
+      const [pk, bid] = k.split('::');
+      const name = (benefitName(pk, bid) || {}).name || '';
+      const ruleId = /discord|サーバー/i.test(name) ? 'discord' : /鍵垢/.test(name) ? 'kagiaka' : null;
+      if (!ruleId) { droppedPerkChecks++; continue; }
+      const rule = settings.rules.find(r => r.id === ruleId);
+      const run = data.fans[fid].planHistory.find(h => rule.planIds.includes(h.planId));
+      if (run) add({ key: `${ruleId}|${fid}|${run.start}`, fanId: fid, type: 'delivered', date: v.date || today });
+    }
+  }
+  // 引き継いだ人の、移行日より前に期限が来ていた入会時・通話・誕生日は「引継ぎ済み」にする（1件ずつ戻せる）
+  const settledKeys = new Set(Object.values(data.records).flatMap(r => [r.key, ...(r.coversKeys || [])]));
+  for (const it of generate(data, today)) {
+    if (it.kind === 'tenure' || compare(it.due, today) >= 0 || settledKeys.has(it.key)) continue;
+    settledKeys.add(it.key);
+    add({ key: it.key, fanId: it.fanId, title: it.title, type: 'migrated', memo: 'v4から引継ぎ（渡し済み扱い）' });
+  }
+  return { data, report: { droppedFans, fans: Object.keys(data.fans).length, records: Object.keys(data.records).length, droppedPerkChecks, droppedSchedules: (v4.state.callSchedules || []).length } };
+}
+
+// ---- storage.js
+
+const DATA_FILE = 'fan_data.json';
+const BACKUP_DIR = 'fan_data_backups';
+const CONFLICT_RE = /^fan_data[- ].+\.json$/;
+const KEEP = 5;
+const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; };
+const UNREADABLE = 'データファイルを読み込めません（OneDriveの同期中かもしれません）。少し待ってからもう一度開いてください。';
+const withSaver = (data, device) => ({ ...data, meta: { ...(data.meta || {}), lastSavedBy: device, lastSavedAt: new Date().toISOString() } });
+
+function createMemoryStorage({ disk = { file: null, conflicts: [], backups: [] }, deviceName = 'PC-TEST' } = {}) {
+  let mtime = 0, seq = 0;
+  const clone = o => (o == null ? o : JSON.parse(JSON.stringify(o)));
+  async function readMerged() {
+    if (disk.corrupt) throw new Error(UNREADABLE);
+    let d = clone(disk.file);
+    const ok = disk.conflicts.filter(c => !c.corrupt);
+    if (ok.length) {
+      if (d) disk.backups.push({ name: `before-conflict-${seq++}`, tag: 'conflict', data: clone(d) });
+      for (const c of ok) d = mergeData(d, c.data);
+      for (const c of ok) disk.conflicts.splice(disk.conflicts.indexOf(c), 1);
+      disk.file = clone(d); mtime = Date.now() + (++seq);
+    }
+    return d;
+  }
+  return {
+    init: async () => {}, status: () => 'ready', pick: async () => {}, regrant: async () => {},
+    deviceName: () => deviceName, setDeviceName: n => { deviceName = n; },
+    load: readMerged,
+    async save(data) {
+      const merged = withSaver(mergeData(await readMerged(), data), deviceName);
+      disk.file = clone(merged); mtime = Date.now() + (++seq);
+      return clone(merged);
+    },
+    async backup(data, tag) {
+      disk.backups.push({ name: `fan_data_${stamp()}_${seq++}_${tag}.json`, tag, data: clone(data) });
+      const mine = disk.backups.filter(b => b.tag === tag);
+      while (mine.length > KEEP) disk.backups.splice(disk.backups.indexOf(mine.shift()), 1);
+    },
+    lastModified: async () => mtime,
+  };
+}
+
+// ---- drive-storage.js
+
+const API = 'https://www.googleapis.com/drive/v3/files';
+const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
+const DRIVE_FOLDER = 'application/vnd.google-apps.folder';
+const DATA_NAME = 'fan_data.json', FOLDER_NAME = 'FC管理', BACKUP_FOLDER = 'FC管理_バックアップ';
+const FILE_KEY = 'fcm-v5-fileId', DEV_KEY = 'fcm-v5-device';
+const KEEP_BACKUPS = 5;
+const MSG = {
+  offline: 'Googleドライブにつながりませんでした。ネットにつながってからもう一度試してください（今の操作は保存されていません）。',
+  notFound: 'データファイルが見つかりません。ゴミ箱に移されたか、共有が外れた可能性があります。',
+  forbidden: 'このアカウントにはデータファイルを編集する権限がありません。メインのアカウントから「編集可能」で共有してもらってください。',
+  broken: 'データファイルを読み込めません（中身が壊れている可能性があります）。',
+};
+const q = s => s.replace(/'/g, "\\'");
+
+function createDriveStorage({ fetchFn, auth, picker, local, deviceName }) {
+  let state = 'needsLogin', fileId = local.get(FILE_KEY), warns = [];
+  let device = deviceName || local.get(DEV_KEY) || '';
+  if (!device) { device = 'PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(); local.set(DEV_KEY, device); }
+
+  async function call(url, opts = {}, retried = false) {
+    const token = await auth.getToken();
+    let res;
+    try { res = await fetchFn(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + token } }); }
+    catch (e) { throw new Error(MSG.offline); }
+    if (res.status === 401 && !retried) { await auth.refresh(); return call(url, opts, true); }
+    if (res.status === 404) throw new Error(MSG.notFound);
+    if (res.status === 403) throw new Error(MSG.forbidden);
+    if (!res.ok) throw new Error(`Googleドライブでエラーが起きました（${res.status}）。少し待ってからもう一度試してください。`);
+    return res;
+  }
+  const getJson = async (url, opts) => (await call(url, opts)).json();
+  const list = async query => (await getJson(`${API}?q=${encodeURIComponent(query)}&orderBy=modifiedTime%20desc&fields=files(id,name,modifiedTime)`)).files || [];
+  async function create(name, mimeType, parents) {
+    return getJson(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, mimeType, ...(parents ? { parents } : {}) }) });
+  }
+  const upload = (id, obj) => call(`${UPLOAD}/${id}?uploadType=media`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+  async function folderId(name) {
+    const found = await list(`name='${q(name)}' and mimeType='${DRIVE_FOLDER}' and 'me' in owners and trashed=false`);
+    return found.length ? found[0].id : (await create(name, DRIVE_FOLDER)).id;
+  }
+  async function readRemote() {
+    const text = await (await call(`${API}/${fileId}?alt=media`)).text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch (e) { throw new Error(MSG.broken); }
+  }
+  function remember(id) { fileId = id; local.set(FILE_KEY, id); state = 'ready'; }
+  const withSaver = data => ({ ...data, meta: { ...(data.meta || {}), lastSavedBy: device, lastSavedAt: new Date().toISOString() } });
+
+  return {
+    async init() {
+      warns = [];
+      if (!(await auth.restore())) { state = 'needsLogin'; return; }
+      if (fileId) { state = 'ready'; return; }
+      const owned = await list(`name='${DATA_NAME}' and 'me' in owners and trashed=false`);
+      if (owned.length) {
+        if (owned.length > 1) warns.push(`「${DATA_NAME}」がGoogleドライブに${owned.length}個あります。一番新しいものを使っています。古いものは整理してください。`);
+        remember(owned[0].id);
+      } else state = 'needsFile';
+    },
+    status: () => state,
+    warnings: () => warns,
+    folderName: () => `Googleドライブ / ${FOLDER_NAME}`,
+    async login() { await auth.login(); await this.init(); },
+    async pick() { return this.pickShared(); },
+    async regrant() { await this.login(); },
+    async pickShared() {
+      const id = await picker.pickJson(await auth.getToken());
+      if (!id) return false;
+      remember(id);
+      return true;
+    },
+    deviceName: () => device,
+    setDeviceName(n) { device = n; local.set(DEV_KEY, n); },
+    async load() { return fileId ? readRemote() : null; },
+    async save(data) {
+      if (!fileId) {
+        const parent = await folderId(FOLDER_NAME);
+        const merged = withSaver(mergeData(null, data));
+        const { id } = await create(DATA_NAME, 'application/json', [parent]);
+        await upload(id, merged);
+        remember(id);
+        return merged;
+      }
+      const merged = withSaver(mergeData(await readRemote(), data));
+      await upload(fileId, merged);
+      return merged;
+    },
+    async lastModified() {
+      if (!fileId) return 0;
+      const meta = await getJson(`${API}/${fileId}?fields=modifiedTime`);
+      return Date.parse(meta.modifiedTime) || 0;
+    },
+    async backup(data, tag) {
+      const parent = await folderId(BACKUP_FOLDER);
+      const d = new Date(), p = n => String(n).padStart(2, '0');
+      const name = `fan_data_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}-${Math.random().toString(36).slice(2, 5)}_${tag}.json`;
+      const { id } = await create(name, 'application/json', [parent]);
+      await upload(id, data);
+      const mine = (await list(`'${parent}' in parents and trashed=false`)).filter(f => f.name.endsWith(`_${tag}.json`));
+      for (const f of mine.slice(KEEP_BACKUPS)) await call(`${API}/${f.id}`, { method: 'DELETE' });
+    },
+    async shareWith(email) {
+      if (!fileId) throw new Error('先にデータを作ってください（「新しく始める」か「v4のデータを読み込む」）。');
+      await call(`${API}/${fileId}/permissions?sendNotificationEmail=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'writer', type: 'user', emailAddress: email }) });
+    },
+  };
+}
+
+function productionStorage() {
+  if (!GOOGLE.clientId || GOOGLE.clientId === 'SET_ME') return { init: async () => {}, status: () => 'notConfigured', deviceName: () => '' };
+  return createDriveStorage({ fetchFn: (u, o) => fetch(u, o), auth: createGoogleAuth(GOOGLE.clientId), picker: createGooglePicker(GOOGLE.apiKey, GOOGLE.appId), local: browserLocal() });
+}
+
+// ---- google.js
+const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const TOKEN_KEY = 'fcm-v5-token';
+const scripts = {};
+function loadScript(src) {
+  if (!scripts[src]) scripts[src] = new Promise((ok, ng) => {
+    const s = document.createElement('script'); s.src = src; s.async = true; s.onload = ok;
+    s.onerror = () => { delete scripts[src]; ng(new Error('Googleの部品を読み込めませんでした。ネットにつながっているか確認してください。')); };
+    document.head.appendChild(s);
+  });
+  return scripts[src];
+}
+
+function browserLocal() {
+  return { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+}
+
+function createGoogleAuth(clientId) {
+  const local = browserLocal();
+  let client = null, token = null, exp = 0;
+  try { const t = JSON.parse(local.get(TOKEN_KEY) || 'null'); if (t && t.exp > Date.now()) { token = t.token; exp = t.exp; } } catch (e) {}
+  async function ensure() {
+    await loadScript('https://accounts.google.com/gsi/client');
+    if (!client) client = window.google.accounts.oauth2.initTokenClient({ client_id: clientId, scope: SCOPE, callback: () => {} });
+  }
+  async function request(prompt) {
+    await ensure();
+    return new Promise((ok, ng) => {
+      client.callback = r => {
+        if (r.error) return ng(new Error('Googleのログインができませんでした：' + r.error));
+        token = r.access_token; exp = Date.now() + (Number(r.expires_in || 3600) - 120) * 1000;
+        local.set(TOKEN_KEY, JSON.stringify({ token, exp })); local.set('fcm-v5-signed', '1');
+        ok(token);
+      };
+      client.error_callback = e => ng(new Error(e && e.type === 'popup_closed' ? 'ログイン画面が閉じられました' : 'Googleのログイン画面を開けませんでした（ポップアップがブロックされていないか確認してください）'));
+      client.requestAccessToken({ prompt });
+    });
+  }
+  return {
+    signedIn: () => !!token && Date.now() < exp,
+    async restore() { return !!token && Date.now() < exp; },
+    async login() { await request(local.get('fcm-v5-signed') === '1' ? '' : 'consent'); },
+    async getToken() { return token && Date.now() < exp ? token : request(''); },
+    async refresh() { token = null; return request(''); },
+  };
+}
+
+function createGooglePicker(apiKey, appId) {
+  return {
+    async pickJson(token) {
+      await loadScript('https://apis.google.com/js/api.js');
+      await new Promise(r => window.gapi.load('picker', r));
+      const P = window.google.picker;
+      return new Promise(ok => {
+        const view = new P.DocsView(P.ViewId.DOCS).setMimeTypes('application/json').setOwnedByMe(false).setIncludeFolders(false);
+        new P.PickerBuilder().setOAuthToken(token).setDeveloperKey(apiKey).setAppId(appId).addView(view).setLocale('ja')
+          .setTitle('共有された fan_data.json を選んでください')
+          .setCallback(d => { if (d.action === P.Action.PICKED) ok(d.docs[0].id); else if (d.action === P.Action.CANCEL) ok(null); })
+          .build().setVisible(true);
+      });
+    },
+  };
+}
+
+// ---- ui.js
+
+const PLAN_COLORS = { toriko: '#c99a2e', keiai: '#d4588f', suuhai: '#4f7fb8', ketsuniku: '#b8283f', kyoai: '#7e4cc4' };
+const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '退会' };
+const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月']];
+const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
+
+let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active';
+const $ = s => document.querySelector(s);
+const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
+const md = d => (d ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : '');
+const ymd = d => (d ? d.replaceAll('-', '/') : '');
+const ctx = () => ({ device: storage.deviceName(), now: new Date().toISOString() });
+const fanName = id => (data.fans[id] ? data.fans[id].name : `#${id}`);
+const badge = planId => { const p = planById(data.settings, planId); return p ? `<span class="badge" style="--c:${PLAN_COLORS[planId] || '#667'}">${h(p.name.replace(/プラン$/, ''))}</span>` : ''; };
+const ruleOf = key => data.settings.rules.find(r => r.id === key.split('|')[0]);
+
+async function commit(next) {
+  try {
+    data = await storage.save(next);
+    lastMtime = await storage.lastModified();
+  } catch (e) {
+    alert('保存できませんでした。今の操作は反映されていません。\n' + e.message);
+    try { data = await storage.load(); } catch (e2) { return gate('データを読み込めません', h(e2.message), 'もう一度読み込む', async () => boot()); }
+    if (!data) return firstRun();
+  }
+  render();
+}
+
+// ---------- dialog ----------
+function openDialog(title, body, { ok = 'OK', danger = false, onOk, wide = false } = {}) {
+  const d = $('#dlg');
+  d.className = wide ? 'wide' : '';
+  d.innerHTML = `<form method="dialog"><h3>${h(title)}</h3><div class="dlg-body">${body}</div>
+    <div class="dlg-actions"><button type="button" class="btn ghost cancel">キャンセル</button>${onOk ? `<button type="submit" class="btn ${danger ? 'danger' : 'primary'} confirm">${h(ok)}</button>` : ''}</div></form>`;
+  d.querySelector('.cancel').onclick = () => d.close();
+  d.querySelector('form').onsubmit = async e => {
+    e.preventDefault();
+    const res = onOk && await onOk(d);
+    if (res !== false) d.close();
+  };
+  d.showModal();
+  return d;
+}
+
+// ---------- start screens ----------
+async function startApp(st) {
+  storage = st;
+  today = todayLocal();
+  window.addEventListener('dragover', e => { e.preventDefault(); document.body.classList.add('dragging'); });
+  window.addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classList.remove('dragging'); });
+  window.addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('dragging'); const f = e.dataTransfer.files[0]; if (f && data) handleFile(f); });
+  window.addEventListener('focus', refreshIfChanged);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIfChanged(); });
+  boot();
+}
+
+async function boot() {
+  let s;
+  try { await storage.init(); s = storage.status(); } catch (e) { return gate('Googleドライブにつながりません', h(e.message), 'もう一度試す', async () => boot()); }
+  if (s === 'notConfigured') return gate('準備中です', 'Googleの設定値がまだ入っていません。');
+  if (s === 'needsLogin') return gate('ファンクラブ管理ツール', 'Googleアカウントでログインして開きます。', 'Googleで開く', async () => { await storage.login(); boot(); });
+  if (s === 'needsFile') return firstRun();
+  try {
+    data = await storage.load();
+    lastMtime = await storage.lastModified();
+  } catch (e) {
+    return gate('データを読み込めません', h(e.message), 'もう一度読み込む', async () => boot());
+  }
+  if (!data) return firstRun();
+  render();
+  showRecentSaveBanner();
+}
+
+function gate(title, text, label, action) {
+  $('#app').innerHTML = `<div class="gate panel"><h1>${title}</h1><p>${text}</p>${label ? `<button class="btn primary big" id="gateBtn">${label}</button>` : ''}</div>`;
+  if (label) $('#gateBtn').onclick = () => action().catch(e => { if (e.name !== 'AbortError') alert('うまくいきませんでした：' + e.message); });
+}
+
+function firstRun() {
+  $('#app').innerHTML = `<div class="gate panel"><h1>はじめに</h1>
+    <p><b>メインのアカウント</b>：今までのツール（v4）で「管理データを書き出す」をしたファイルがあれば、読み込むと履歴を引き継げます。</p>
+    <div class="row"><button class="btn primary big" id="fromV4">v4のデータを読み込む</button><button class="btn ghost big" id="fresh">新しく始める</button></div>
+    <p style="margin-top:22px"><b>もう1台のアカウント</b>：メインのアカウントから共有された fan_data.json を開きます。</p>
+    <div class="row"><button class="btn primary big" id="openShared">共有されたデータを開く</button></div></div>`;
+  $('#fromV4').onclick = () => $('#csvInput').click();
+  $('#fresh').onclick = async () => { const d = emptyData(); d.meta.migratedAt = today; data = null; await commit(d); };
+  $('#openShared').onclick = async () => {
+    try { if (await storage.pickShared()) boot(); } catch (e) { alert(e.message); }
+  };
+}
+
+async function refreshIfChanged() {
+  if (!data || storage.status() !== 'ready') return;
+  try {
+    const m = await storage.lastModified();
+    if (m && m !== lastMtime) { const d = await storage.load(); if (!d) return; data = d; lastMtime = m; render(); showRecentSaveBanner(); }
+  } catch (e) { console.error(e); }
+}
+
+function showRecentSaveBanner() {
+  const m = data.meta || {};
+  const el = $('#banner');
+  if (!el) return;
+  const warns = storage.warnings ? storage.warnings() : [];
+  if (warns.length) el.innerHTML = warns.map(w => `<div class="banner">${h(w)}</div>`).join('');
+  const mins = m.lastSavedAt ? Math.floor((Date.now() - Date.parse(m.lastSavedAt)) / 60000) : 999;
+  if (m.lastSavedBy && m.lastSavedBy !== storage.deviceName() && mins < 5) {
+    el.innerHTML += `<div class="banner">別のPC（${h(m.lastSavedBy)}）で${mins < 1 ? 'さっき' : mins + '分前に'}保存されました。最新の内容を表示しています。<button class="x">×</button></div>`;
+    el.querySelector('.x').onclick = () => { el.innerHTML = ''; };
+  }
+}
+
+// ---------- main render ----------
+function render() {
+  today = todayLocal();
+  const list = computeList(data, today);
+  const fans = Object.values(data.fans);
+  const count = s => list.items.filter(i => i.status === s).length;
+  $('#app').innerHTML = `
+    <header class="top">
+      <div class="brand"><b>${h(data.settings.clubName)}</b>
+        <span class="sum">在籍 ${fans.filter(f => f.status === 'active').length}人<i>｜</i>今月 ${count('thisMonth')}件<i>｜</i><span class="${count('overdue') ? 'warn' : ''}">期限切れ ${count('overdue')}件</span></span></div>
+      <div class="actions"><button class="btn ghost" id="csvBtn">CSV取込</button><button class="btn ghost" id="settingsBtn">設定</button></div>
+    </header>
+    <div id="banner"></div>
+    <main>
+      <section id="list" class="panel">${renderList(list)}</section>
+      ${renderNotices(list.notices)}
+      <section class="panel">
+        <nav class="tabs">${[['fans', 'ファン一覧'], ['records', '渡した記録'], ['revenue', '収益']].map(([k, l]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</nav>
+        <div id="tabContent">${renderTab()}</div>
+      </section>
+    </main>
+    <p class="foot">CSV・v4データは画面のどこにドロップしても読み込めます　／　このPC：${h(storage.deviceName())}</p>`;
+  wire(list);
+}
+
+function renderList(list) {
+  if (!list.items.length) return `<h2>渡すものリスト</h2><div class="empty">今月・来月に渡すものはありません 🎉</div>`;
+  return `<h2>渡すものリスト</h2>` + GROUPS.map(([st, label]) => {
+    const its = list.items.filter(i => i.status === st);
+    if (!its.length) return '';
+    return `<div class="group ${st}"><div class="glabel">${st === 'overdue' ? '⚠ ' : ''}${label}<span>${its.length}</span></div>${its.map(itemRow).join('')}</div>`;
+  }).join('');
+}
+
+function itemRow(i) {
+  const f = data.fans[i.fanId] || {};
+  const plan = planOn(f, i.due) || planOn(f, today) || (f.planHistory || []).at(-1)?.planId;
+  const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
+  const btns = [`<button class="btn primary deliver">渡した</button>`,
+    i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
+    i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : ''].join('');
+  return `<div class="item" data-key="${h(i.key)}"><div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
+    <div class="what">${h(i.title)} ${tags}</div><div class="due">${i.scheduled ? '予定 ' : ''}${md(i.due)}</div><div class="btns">${btns}</div></div>`;
+}
+
+function renderNotices(n) {
+  const parts = [];
+  if (n.missingBirthday.length) parts.push(`<div class="notice">🎂 誕生日が未入力の人：${n.missingBirthday.map(id => `<button class="link fanlink" data-id="${h(id)}">${h(fanName(id))}</button>`).join('、')}</div>`);
+  for (const u of n.undecidedMilestones) parts.push(`<div class="notice">⭐ もうすぐ${u.months}か月の人がいます（${u.memberNos.map(fanName).map(h).join('、')}）。${u.months}か月の特典を決めますか？ <button class="link" id="decide${u.months}">特典を決める</button></div>`);
+  return parts.length ? `<section id="notices">${parts.join('')}</section>` : '';
+}
+
+function renderTab() {
+  if (tab === 'records') return renderRecords();
+  if (tab === 'revenue') return renderRevenue();
+  return renderFans();
+}
+
+function tenureMonths(f) {
+  let m = 0;
+  for (const p of f.periods) m += diffMonthsDays(p.start, p.end && compare(p.end, today) < 0 ? p.end : today).months;
+  return m;
+}
+
+function renderFans() {
+  const all = Object.values(data.fans);
+  const recent = addMonths(today, -1);
+  const filters = [['active', '在籍', f => f.status === 'active'], ['new', '新規（1か月以内）', f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0],
+    ['leftCandidate', '退会候補', f => f.status === 'leftCandidate'], ['left', '退会', f => f.status === 'left'], ['all', 'すべて', () => true]];
+  const pred = (filters.find(x => x[0] === fanFilter) || filters[0])[2];
+  const rows = all.filter(pred).sort((a, b) => Number(a.memberNo) - Number(b.memberNo) || compare(a.memberNo, b.memberNo)).map(f => {
+    const cur = planOn(f, today) || f.planHistory.at(-1).planId;
+    const r12 = data.settings.rules.filter(r => r.kind === 'tenure').map(r => reachDate(f, r.months)).filter(d => d && compare(d, today) >= 0).sort()[0];
+    return `<tr><td class="num">${h(f.memberNo)}</td><td><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(cur)}</td>
+      <td>${STATUS_LABEL[f.status]}</td><td>${tenureMonths(f)}か月</td><td>${r12 ? ymd(r12) : '-'}</td><td>${f.birthday ? f.birthday.replace('-', '/') : '-'}</td>
+      <td>${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</td></tr>`;
+  }).join('');
+  return `<div class="chips">${filters.map(([k, l, p]) => `<button class="chip ${fanFilter === k ? 'on' : ''}" data-filter="${k}">${l} ${all.filter(p).length}</button>`).join('')}</div>
+    ${rows ? `<div class="scroll"><table><thead><tr><th>No</th><th>名前</th><th>プラン</th><th>状態</th><th>在籍</th><th>次の継続特典</th><th>誕生日</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : '<div class="empty">該当するファンはいません</div>'}`;
+}
+
+function recordTitle(r) {
+  if (r.title) return r.title;
+  const rule = ruleOf(r.key);
+  if (!rule) { const m = r.key.match(/^tenure-(\d+)/); return m ? `${m[1]}か月継続` : r.key; }
+  return rule.kind === 'tenure' ? `${rule.months}か月継続` : rule.label;
+}
+
+function renderRecords() {
+  const recs = Object.values(data.records).filter(r => !r.deleted && (r.type === 'delivered' || r.type === 'dismissed'))
+    .sort((a, b) => compare(b.date || b.updatedAt, a.date || a.updatedAt) || compare(b.updatedAt, a.updatedAt));
+  if (!recs.length) return '<div class="empty">まだ記録はありません</div>';
+  return `<div class="scroll"><table><thead><tr><th>渡した日</th><th>名前</th><th>内容</th><th>メモ</th><th>記録したPC</th><th></th></tr></thead><tbody>${recs.map(r => `
+    <tr class="record"><td>${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td><td>${h(fanName(r.fanId))}</td>
+    <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}</td>
+    <td>${h(r.memo)}</td><td class="muted">${h(r.device)}</td>
+    <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderRevenue() {
+  const active = Object.values(data.fans).filter(f => f.status === 'active');
+  const byPlan = data.settings.plans.map(p => { const n = active.filter(f => planOn(f, today) === p.id).length; return { p, n, sum: n * p.price }; });
+  const total = byPlan.reduce((s, x) => s + x.sum, 0);
+  const support = f => f.planHistory.reduce((s, ph) => {
+    if (compare(ph.start, today) > 0) return s;
+    const end = ph.end && compare(ph.end, today) < 0 ? ph.end : today;
+    const p = planById(data.settings, ph.planId);
+    return s + (diffMonthsDays(ph.start, end).months + 1) * (p ? p.price : 0);
+  }, 0);
+  const fans = Object.values(data.fans).map(f => ({ f, s: support(f) })).sort((a, b) => b.s - a.s);
+  return `<div class="grid2"><div><h3>プラン別（在籍中）</h3><table><tbody>${byPlan.map(x => `<tr><td>${badge(x.p.id)}</td><td>${yen(x.p.price)}</td><td>${x.n}人</td><td class="r"><b>${yen(x.sum)}</b></td></tr>`).join('')}
+    <tr class="total"><td colspan="3">月額合計</td><td class="r"><b>${yen(total)}</b></td></tr></tbody></table>
+    <p class="muted small">支援額はプランの在籍月数（開始月を含む）× 月額で計算した目安です。</p></div>
+    <div><h3>ユーザー別 累計支援額</h3><div class="scroll short"><table><tbody>${fans.map(({ f, s }) => `<tr><td>${h(f.name)}</td><td>${STATUS_LABEL[f.status]}</td><td class="r">${yen(s)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+}
+
+// ---------- wiring ----------
+function wire(list) {
+  $('#csvBtn').onclick = () => $('#csvInput').click();
+  $('#settingsBtn').onclick = openSettings;
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; $('#tabContent').innerHTML = renderTab(); wireTab(); document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); });
+  const byKey = Object.fromEntries(list.items.map(i => [i.key, i]));
+  document.querySelectorAll('#list .item').forEach(row => {
+    const it = byKey[row.dataset.key];
+    row.querySelector('.deliver').onclick = () => openDeliver(it);
+    const s = row.querySelector('.sched'); if (s) s.onclick = () => openSchedule(it);
+    const c = row.querySelector('.carry'); if (c) c.onclick = () => openCarry(it);
+    const d = row.querySelector('.dismiss'); if (d) d.onclick = () => openDialog('対象外にする', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」をリストから外します。</p><label>メモ<input name="memo" placeholder="例：退会のため"></label>`,
+      { ok: '対象外にする', onOk: dl => commit(dismiss(data, it, dl.querySelector('[name=memo]').value, ctx())) });
+  });
+  for (const u of list.notices.undecidedMilestones) { const b = $('#decide' + u.months); if (b) b.onclick = () => openRuleEditor(null, { kind: 'tenure', months: u.months }); }
+  wireTab();
+}
+
+function wireTab() {
+  document.querySelectorAll('.fanlink').forEach(b => b.onclick = () => openFan(b.dataset.id));
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; $('#tabContent').innerHTML = renderTab(); wireTab(); });
+  document.querySelectorAll('.leftbtn').forEach(b => b.onclick = () => openDialog('退会を確定', `<p>${h(fanName(b.dataset.id))}さんを退会として記録します。再入会したときは、在籍していた月数から続きを数えます。</p><label>退会日<input type="date" name="date" value="${today}" required></label>`,
+    { ok: '退会確定', danger: true, onOk: dl => commit(touchFan(confirmLeft(data, b.dataset.id, dl.querySelector('[name=date]').value), b.dataset.id)) }));
+  document.querySelectorAll('.editrec').forEach(b => b.onclick = () => {
+    const r = data.records[b.dataset.id];
+    openDialog('記録を修正', `<label>渡した日<input type="date" name="date" value="${h(r.date || '')}"></label><label>メモ<input name="memo" value="${h(r.memo || '')}"></label>`,
+      { ok: '保存', onOk: dl => commit(editRecord(data, r.id, { date: dl.querySelector('[name=date]').value, memo: dl.querySelector('[name=memo]').value }, ctx())) });
+  });
+  document.querySelectorAll('.delrec').forEach(b => b.onclick = () => openDialog('記録を削除', `<p>この記録を削除すると、渡すものリストに戻ります。</p>`,
+    { ok: '削除', danger: true, onOk: () => commit(removeRecord(data, b.dataset.id, ctx())) }));
+}
+
+const touchFan = (d, id) => { d.fans[id].updatedAt = new Date().toISOString(); return d; };
+
+function openDeliver(it) {
+  const rule = ruleOf(it.key) || {};
+  const variants = (rule.variants || []).map((v, n) => `<label class="inline"><input type="radio" name="variant" value="${h(v)}" ${n === 0 ? 'checked' : ''}> ${h(v)}</label>`).join('');
+  openDialog('渡した', `<p><b>${h(fanName(it.fanId))}</b>さん：${h(it.title)}${it.count > 1 ? `（${it.count}回分をまとめて）` : ''}</p>
+    ${variants ? `<div class="field">内容 ${variants}</div>` : ''}
+    <label>渡した日<input type="date" name="date" value="${today}" required></label>
+    ${it.kind === 'interval' ? '<label>通話時間（分・任意）<input type="number" name="minutes" min="0"></label>' : ''}
+    <label>メモ（任意）<input name="memo"></label>`, {
+    ok: '記録する', onOk: dl => {
+      const v = dl.querySelector('[name=variant]:checked'), m = dl.querySelector('[name=minutes]');
+      return commit(deliver(data, it, { date: dl.querySelector('[name=date]').value, memo: dl.querySelector('[name=memo]').value, variant: v ? v.value : '', minutes: m && m.value ? Number(m.value) : null }, ctx()));
+    },
+  });
+}
+
+function openSchedule(it) {
+  openDialog('予定日を決める', `<p>${h(fanName(it.fanId))}さん：${h(it.title)}</p><label>予定日（月をまたいでもOK）<input type="date" name="date" value="${it.scheduled ? it.due : ''}" required></label>`,
+    { ok: '保存', onOk: dl => commit(schedule(data, it.key, it.fanId, dl.querySelector('[name=date]').value, ctx())) });
+}
+
+function openCarry(it) {
+  openDialog('次に回す', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」を次の回に回します。次の回は「${it.count + 1}回分」として表示され、1回の通話でまとめて「渡した」にできます。</p>`,
+    { ok: '次に回す', onOk: () => {
+      const d = carry(data, it.key, it.fanId, ctx());
+      if (!Object.values(d.records).at(-1).carryTo) { alert('次の回が見つかりませんでした（プラン変更などで対象外になっている可能性があります）'); return false; }
+      return commit(d);
+    } });
+}
+
+function openFan(id) {
+  setTimeout(() => document.querySelectorAll('#dlg .unmig').forEach(b => b.onclick = () => { $('#dlg').close(); commit(removeRecord(data, b.dataset.id, ctx())); }), 0);
+  const f = data.fans[id];
+  const recs = Object.values(data.records).filter(r => r.fanId === id && !r.deleted && (r.type === 'delivered' || r.type === 'dismissed')).sort((a, b) => compare(b.date || '', a.date || ''));
+  const migrated = Object.values(data.records).filter(r => r.fanId === id && !r.deleted && r.type === 'migrated');
+  const [bm, bd] = (f.birthday || '-').split('-');
+  openDialog(f.name, `
+    <p>${badge(planOn(f, today) || f.planHistory.at(-1).planId)} ${STATUS_LABEL[f.status]}　在籍 ${tenureMonths(f)}か月　会員番号 ${h(f.memberNo)}${/^https?:\/\//i.test(f.profileUrl || '') ? `　<a href="${h(f.profileUrl)}" target="_blank" rel="noopener">プロフィール</a>` : ''}</p>
+    <div class="field">誕生日 <select name="bm"><option value="">-</option>${Array.from({ length: 12 }, (_, i) => `<option ${Number(bm) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>月
+      <select name="bd"><option value="">-</option>${Array.from({ length: 31 }, (_, i) => `<option ${Number(bd) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>日</div>
+    <h4>プランの変遷</h4><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
+    <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul>
+    <h4>渡した記録</h4>${recs.length ? `<ul class="plain">${recs.map(r => `<li>${r.type === 'dismissed' ? '対象外' : ymd(r.date)}　${h(recordTitle(r))}${r.memo ? `　<span class="muted">${h(r.memo)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="muted">まだありません</p>'}
+    ${migrated.length ? `<h4>v4から引継ぎ（渡し済み扱い）</h4><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul>` : ''}`, {
+    ok: '保存', wide: true, onOk: dl => {
+      const m = dl.querySelector('[name=bm]').value, d = dl.querySelector('[name=bd]').value;
+      const bday = m && d ? `${m.padStart(2, '0')}-${d.padStart(2, '0')}` : null;
+      if (bday === f.birthday) return;
+      const next = JSON.parse(JSON.stringify(data));
+      next.fans[id].birthday = bday;
+      next.fans[id].birthdayUpdatedAt = new Date().toISOString();
+      return commit(touchFan(next, id));
+    },
+  });
+}
+
+// ---------- files ----------
+document.addEventListener('change', e => { if (e.target.id === 'csvInput' && e.target.files[0]) { handleFile(e.target.files[0]); e.target.value = ''; } });
+
+async function handleFile(file) {
+  const text = await file.text();
+  if (/\.csv$/i.test(file.name)) return previewCsv(text);
+  let json;
+  try { json = JSON.parse(text); } catch (e) { return alert('読み込めないファイルです'); }
+  if (json && json.config && json.state) return previewV4(json);
+  if (json && json.version === 5) return openDialog('書き出したデータを読み込む', '<p>このファイルの内容を今のデータと合体させます（どちらかにしかない記録はすべて残ります）。</p>',
+    { ok: '読み込む', onOk: async () => { if (data) await storage.backup(data, 'import'); return commit(mergeData(data, json)); } });
+  alert('対応していないファイルです（CreatiaのCSV、v4の書き出しデータ、v5の書き出しデータに対応）');
+}
+
+function previewCsv(text) {
+  if (!data) return alert('先に「v4のデータを読み込む」か「新しく始める」を選んでください');
+  const parsed = parseCreatiaCsv(text);
+  if (!parsed.rows.length) return openDialog('このCSVは取り込めません', `<p>読み取れる行がありませんでした。CreatiaのファンリストCSVか確認してください。</p>${parsed.skipped.length ? `<div class="notice small">${parsed.skipped.map(s => h(`${s.line}行目：${s.reason}`)).join('<br>')}</div>` : ''}`);
+  const keep = parsed.skipped.map(s => s.memberNo).filter(Boolean);
+  const { data: next, summary } = applyCsv(data, parsed.rows, today, keep);
+  const skipped = [...parsed.skipped.map(s => `${s.line}行目：${s.reason}`), ...summary.skipped.map(s => `会員番号${s.memberNo}：${s.reason}`)];
+  const names = ids => ids.map(fanNameIn(next)).map(h).join('、');
+  openDialog('CSVの取り込み', `<div class="csv-summary">
+    <p>新規 <b>${summary.added.length}</b>人　退会候補 <b>${summary.leftCandidates.length}</b>人　再入会 <b>${summary.rejoined.length}</b>人　プラン変更 <b>${summary.planChanged.length}</b>人</p>
+    ${summary.added.length ? `<p class="small">新規：${names(summary.added)}</p>` : ''}
+    ${summary.leftCandidates.length ? `<p class="small">退会候補：${names(summary.leftCandidates)}</p>` : ''}
+    ${summary.rejoined.length ? `<p class="small">再入会（在籍月数は続きから）：${names(summary.rejoined)}</p>` : ''}
+    ${summary.planChanged.length ? `<p class="small">プラン変更：${names(summary.planChanged)}</p>` : ''}
+    ${skipped.length ? `<div class="notice small">読み飛ばした行：<br>${skipped.map(h).join('<br>')}</div>` : ''}
+    <p class="muted small">取り込む前の状態はバックアップされます（直近5回分）。</p></div>`,
+    { ok: '取り込む', onOk: async () => { await storage.backup(data, 'csv'); return commit(next); } });
+}
+const fanNameIn = d => id => (d.fans[id] ? d.fans[id].name : id);
+
+function previewV4(v4) {
+  let res;
+  try { res = migrateV4(v4, today, ctx()); } catch (e) { return alert(e.message); }
+  const { data: migrated, report } = res;
+  openDialog('v4のデータを読み込む', `<div class="csv-summary"><p>ファン <b>${report.fans}</b>人、記録 <b>${report.records}</b>件を引き継ぎます。</p>
+    <p class="small">・今いる人の、今日より前に期限が来ていた入会時の特典・通話・誕生日は渡し済みとして扱います（ファンの詳細から1件ずつ「未渡し」に戻せます）<br>・12か月を過ぎているのに記録がない人は「期限切れ」に出ます<br>・ログイン情報は引き継ぎません</p>
+    ${report.droppedFans.length ? `<div class="notice small">プランが読み取れず引き継げないファン：${report.droppedFans.map(h).join('、')}</div>` : ''}
+    ${report.droppedPerkChecks ? `<p class="small muted">新しい特典ルールに当てはまらないプラン特典のチェック ${report.droppedPerkChecks}件は引き継ぎません。</p>` : ''}
+    ${report.droppedSchedules ? `<p class="small muted">v4の通話予定 ${report.droppedSchedules}件は引き継ぎません（必要なら「予定日」で入れ直してください）。</p>` : ''}
+    ${data ? '<p class="small">今のデータと合体させます。</p>' : ''}</div>`,
+    { ok: '読み込む', onOk: async () => { if (data) await storage.backup(data, 'v4'); return commit(data ? mergeData(data, migrated) : migrated); } });
+}
+
+// ---------- settings ----------
+function openSettings() {
+  const rules = data.settings.rules.map(r => `<tr><td>${h(KIND_LABEL[r.kind])}${r.months && r.kind !== 'tenure' ? `（${r.months}か月）` : ''}${r.kind === 'tenure' ? `（${r.months}か月）` : ''}</td>
+    <td>${h(r.label)}</td><td>${r.planIds.map(badge).join('')}</td><td class="nowrap"><button type="button" class="btn small ghost editrule" data-id="${h(r.id)}">編集</button></td></tr>`).join('');
+  const d = openDialog('設定', `
+    <label>ファンクラブ名<input name="club" value="${h(data.settings.clubName)}"></label>
+    <label>このPCの名前（もう1台と区別するため）<input name="device" value="${h(storage.deviceName())}"></label>
+    <h4>特典ルール <button type="button" class="btn small ghost" id="addRule">＋追加</button></h4>
+    <table><tbody>${rules}</tbody></table>
+    <h4>もう1台のアカウントと共有</h4>
+    ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
+    <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : ''}
+    <h4>データ</h4>
+    <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
+    <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">v4/書き出しデータを読み込む</button></div>`, {
+    ok: '保存', wide: true, onOk: dl => {
+      const club = dl.querySelector('[name=club]').value.trim(), dev = dl.querySelector('[name=device]').value.trim();
+      if (dev && dev !== storage.deviceName()) storage.setDeviceName(dev);
+      if (club && club !== data.settings.clubName) return commit(withSettings(s => { s.clubName = club; }));
+      render();
+    },
+  });
+  const sb = d.querySelector('#shareBtn');
+  if (sb) sb.onclick = async () => {
+    const email = d.querySelector('#shareEmail').value.trim();
+    if (!/^[^@\s]+@[^@\s]+$/.test(email)) return alert('メールアドレスを入れてください');
+    try { await storage.shareWith(email); alert(email + ' に共有しました（Googleから案内メールが届きます）'); } catch (e) { alert(e.message); }
+  };
+  d.querySelector('#addRule').onclick = () => openRuleEditor(null, { kind: 'tenure', months: 24 });
+  d.querySelectorAll('.editrule').forEach(b => b.onclick = () => openRuleEditor(b.dataset.id));
+  d.querySelector('#exportBtn').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+    a.download = `fan_data_export_${today}.json`; a.click();
+  };
+  d.querySelector('#importBtn').onclick = () => { d.close(); $('#csvInput').click(); };
+}
+
+function withSettings(fn) {
+  const next = JSON.parse(JSON.stringify(data));
+  fn(next.settings);
+  next.settings.updatedAt = new Date().toISOString();
+  return next;
+}
+
+function openRuleEditor(ruleId, preset = {}) {
+  const r = ruleId ? data.settings.rules.find(x => x.id === ruleId) : { id: '', kind: preset.kind || 'tenure', months: preset.months || 12, planIds: data.settings.plans.map(p => p.id), label: '', labelByPlan: {} };
+  const planChecks = data.settings.plans.map(p => `<label class="inline"><input type="checkbox" name="plan" value="${p.id}" ${r.planIds.includes(p.id) ? 'checked' : ''}> ${h(p.name)}</label>`).join('');
+  const perPlan = data.settings.plans.map(p => `<label class="inline-wide">${h(p.name)}<input name="lbp-${p.id}" value="${h((r.labelByPlan || {})[p.id] || '')}"></label>`).join('');
+  const d = openDialog(ruleId ? '特典ルールを編集' : '特典ルールを追加', `
+    <label>種類<select name="kind" ${ruleId ? 'disabled' : ''}>${Object.entries(KIND_LABEL).map(([k, l]) => `<option value="${k}" ${r.kind === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <label class="months">月数<input type="number" name="months" min="1" value="${h(r.months || '')}"></label>
+    <label>特典名<input name="label" value="${h(r.label)}" placeholder="例：24か月継続特典"></label>
+    <div class="field">対象プラン<br>${planChecks}</div>
+    <div class="perplan"><div class="field">プランごとの特典名（継続◯か月のとき。空欄なら上の特典名）</div>${perPlan}</div>
+    ${ruleId ? '<p><button type="button" class="btn small danger" id="delRule">このルールを削除</button></p>' : ''}`, {
+    ok: '保存', wide: true, onOk: dl => {
+      const kind = dl.querySelector('[name=kind]').value, months = Number(dl.querySelector('[name=months]').value) || null;
+      const label = dl.querySelector('[name=label]').value.trim(), planIds = [...dl.querySelectorAll('[name=plan]:checked')].map(x => x.value);
+      if (!label || !planIds.length || ((kind === 'interval' || kind === 'tenure') && !months)) { alert('特典名・対象プラン・月数を入れてください'); return false; }
+      const labelByPlan = {};
+      data.settings.plans.forEach(p => { const v = dl.querySelector(`[name=lbp-${p.id}]`).value.trim(); if (v) labelByPlan[p.id] = v; });
+      const id = ruleId || (kind === 'tenure' ? `tenure-${months}` : `${kind}-${Date.now().toString(36)}`);
+      if (!ruleId && data.settings.rules.some(x => x.id === id)) { alert('同じ月数の継続特典がすでにあります'); return false; }
+      return commit(withSettings(s => {
+        const nr = { ...(ruleId ? s.rules.find(x => x.id === ruleId) : {}), id, kind, label, planIds, ...(months ? { months } : {}), ...(kind === 'tenure' ? { labelByPlan } : {}) };
+        if (ruleId) s.rules = s.rules.map(x => (x.id === ruleId ? nr : x)); else s.rules.push(nr);
+      }));
+    },
+  });
+  const sync = () => { const k = d.querySelector('[name=kind]').value; d.querySelector('.months').style.display = k === 'interval' || k === 'tenure' ? '' : 'none'; d.querySelector('.perplan').style.display = k === 'tenure' ? '' : 'none'; };
+  d.querySelector('[name=kind]').onchange = sync; sync();
+  const del = d.querySelector('#delRule');
+  if (del) del.onclick = () => { if (confirm('このルールを削除しますか？（渡した記録は残ります）')) { d.close(); commit(withSettings(s => { s.rules = s.rules.filter(x => x.id !== ruleId); })); } };
+}
+
+if (typeof startApp === 'function') window.addEventListener('DOMContentLoaded', () => startApp(window.__TEST_DISK__ ? createMemoryStorage({ disk: window.__TEST_DISK__, deviceName: 'PC-TEST' }) : productionStorage()));
+})();</script>
+</body>
+</html>
