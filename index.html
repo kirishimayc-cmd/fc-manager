@@ -7,7 +7,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ファンクラブ管理ツール</title>
 <style>:root{--wine:#8e2443;--wine-soft:#f8eef1;--ink:#26222a;--muted:#77707c;--line:#ebe5ea;--bg:#faf7f8;--warn:#b42318;font-family:system-ui,"Segoe UI","Yu Gothic UI",sans-serif;color:var(--ink);background:var(--bg)}
-*{box-sizing:border-box}body{margin:0;padding:14px 18px 30px;max-width:1180px;margin:auto}
+*{box-sizing:border-box}body{margin:0;padding:14px 18px 30px;max-width:1040px;margin:auto}
 h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:4px 0 10px}h4{font-size:14px;margin:16px 0 6px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 10px}
@@ -19,8 +19,8 @@ h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size
 .link{background:none;border:0;padding:0;color:var(--wine);text-decoration:underline;cursor:pointer;font:inherit}
 .group{margin-top:6px}.glabel{font-size:12px;font-weight:700;color:var(--muted);padding:8px 2px 4px;border-bottom:1px solid var(--line)}.glabel span{margin-left:6px;background:#eee;border-radius:9px;padding:0 7px}
 .group.overdue .glabel{color:var(--warn)}.group.overdue .glabel span{background:#fde7e5;color:var(--warn)}
-.item{display:grid;grid-template-columns:minmax(150px,1.1fr) 2fr 90px auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid #f3eff2}
-.item:hover{background:#fdfafb}.who{font-weight:600}.due{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}.group.overdue .due{color:var(--warn);font-weight:700}.btns{display:flex;gap:6px;justify-content:flex-end}
+.item{display:grid;grid-template-columns:96px minmax(140px,190px) 1fr auto;gap:12px;align-items:center;padding:10px 8px;border-bottom:1px solid #f3eff2;border-radius:6px}.item:nth-child(even){background:#fcf9fa}
+.item:hover{background:#fdfafb}.who{font-weight:600}.due{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}.due small{display:block;font-size:10px;color:#2f5aa0;font-weight:600}.group.overdue .due{color:var(--warn);font-weight:700}.btns{display:flex;gap:6px;justify-content:flex-end}
 .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:4px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);vertical-align:1px}
 .tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:#eef3fb;color:#2f5aa0}.tag.strong{background:#fff1d6;color:#8a5a00;font-weight:700}.tag.gray{background:#eee;color:#666}
 .empty{color:var(--muted);text-align:center;padding:22px}
@@ -43,6 +43,15 @@ label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:cente
 @media(max-width:760px){.item{grid-template-columns:1fr auto}.what{grid-column:1/-1}.btns{grid-column:1/-1;justify-content:flex-start}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
 .notice.warn-strong{background:#fdecea;border-color:#f5b5ad;color:#8a1c12;font-weight:600}
 .fanpick{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 10px}label.inline-row{display:flex;align-items:center;gap:6px;font-weight:500;margin:4px 0}label.inline-row input{width:auto;margin:0}
+.listhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.listhead h2{margin:0}
+.controls{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.ctl-label{font-size:11px;color:var(--muted);margin:0 2px 0 8px}
+.sortbtn,.kindchip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.sortbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}.kindchip.on{background:var(--k,var(--wine));color:#fff;border-color:var(--k,var(--wine))}
+.kindtag{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;margin-right:8px;background:color-mix(in srgb,var(--k) 13%,#fff);font-size:13px;vertical-align:middle}
+.what{line-height:1.45}.group.overdue .item{background:#fff8f7}.group.overdue .item:nth-child(even){background:#fdf1ef}
+table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.fans th.sortable:hover{color:var(--wine)}table.fans tbody tr:hover{background:#fdf6f8}table.fans td{padding:9px 8px}
+.st{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}.st-active{background:#e9f6ee;color:#1e7a43}.st-leftCandidate{background:#fff1d6;color:#8a5a00}.st-left{background:#eee;color:#666}
+@media(max-width:760px){.item{grid-template-columns:80px 1fr}.what,.btns{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -291,6 +300,7 @@ function generate(data, today) {
         for (const run of eligibleRuns(fan, rule.planIds)) {
           for (let y = Number(run.start.slice(0, 4)); y <= Number(today.slice(0, 4)) + 1; y++) {
             const d = birthdayOn(y, fan.birthday);
+            if (fan.birthdaySetOn && compare(d, fan.birthdaySetOn) < 0) continue;
             if (compare(d, run.start) >= 0 && (!run.end || compare(d, run.end) <= 0)) push(`${rule.id}|${fan.memberNo}|${y}`, d, rule.label);
           }
         }
@@ -445,7 +455,7 @@ function mergeFans(a = {}, b = {}) {
     const bx = x.birthdayUpdatedAt || '', by = y.birthdayUpdatedAt || '';
     if (bx === by) continue;
     const src = bx > by ? x : y;
-    out[k] = { ...out[k], birthday: src.birthday, birthdayUpdatedAt: src.birthdayUpdatedAt };
+    out[k] = { ...out[k], birthday: src.birthday, birthdayUpdatedAt: src.birthdayUpdatedAt, birthdaySetOn: src.birthdaySetOn || out[k].birthdaySetOn };
   }
   return out;
 }
@@ -801,6 +811,42 @@ function createGooglePicker(apiKey, appId) {
   };
 }
 
+// ---- view.js
+const KIND_META = {
+  tenure: { icon: '🎁', label: '継続', color: '#b8283f' },
+  interval: { icon: '📞', label: '通話', color: '#2f6fb3' },
+  birthday: { icon: '🎂', label: '誕生日', color: '#c27a00' },
+  join: { icon: '🔑', label: '入会時', color: '#4a7d3a' },
+  extra: { icon: '🎰', label: '個別', color: '#7e4cc4' },
+};
+const KIND_ORDER = Object.keys(KIND_META);
+const STATUS_ORDER = { overdue: 0, thisMonth: 1, nextMonth: 2, later: 3 };
+const cmpStr = (a, b) => String(a).localeCompare(String(b), 'ja');
+
+function sortItems(items, mode, nameOf) {
+  const tie = (a, b) => cmpStr(a.due, b.due) || cmpStr(nameOf(a.fanId), nameOf(b.fanId));
+  const by = {
+    due: tie,
+    name: (a, b) => cmpStr(nameOf(a.fanId), nameOf(b.fanId)) || cmpStr(a.due, b.due),
+    kind: (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || tie(a, b),
+  }[mode] || tie;
+  return [...items].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || by(a, b));
+}
+
+const filterItems = (items, kind) => (kind && kind !== 'all' ? items.filter(i => i.kind === kind) : items);
+
+function sortFanRows(rows, key, dir) {
+  const sign = dir === 'desc' ? -1 : 1;
+  const val = r => (key === 'memberNo' ? Number(r.memberNo) : r[key]);
+  return [...rows].sort((a, b) => {
+    const x = val(a), y = val(b);
+    const bx = x === null || x === undefined || x === '', by = y === null || y === undefined || y === '';
+    if (bx || by) return bx === by ? 0 : bx ? 1 : -1;            // blanks always last
+    const c = typeof x === 'number' && typeof y === 'number' ? x - y : cmpStr(x, y);
+    return c * sign || Number(a.memberNo) - Number(b.memberNo);
+  });
+}
+
 // ---- ui.js
 
 const PLAN_COLORS = { toriko: '#c99a2e', keiai: '#d4588f', suuhai: '#4f7fb8', ketsuniku: '#b8283f', kyoai: '#7e4cc4' };
@@ -808,7 +854,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active';
+let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' };
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -954,24 +1000,33 @@ function render() {
 }
 
 function renderList(list) {
-  if (!list.items.length) return `<h2>渡すものリスト</h2><div class="empty">今月・来月に渡すものはありません 🎉</div>`;
-  return `<h2>渡すものリスト</h2>` + GROUPS.map(([st, label]) => {
-    const its = list.items.filter(i => i.status === st);
+  const head = `<div class="listhead"><h2>渡すものリスト</h2>${list.items.length ? `<div class="controls">
+    <span class="ctl-label">並べ替え</span>${[['due', '期限順'], ['name', '名前順'], ['kind', '種類順']].map(([k, l]) => `<button class="sortbtn ${listSort === k ? 'on' : ''}" data-sort="${k}">${l}</button>`).join('')}
+    <span class="ctl-label">絞り込み</span><button class="kindchip ${listKind === 'all' ? 'on' : ''}" data-kind="all">すべて ${list.items.length}</button>${Object.entries(KIND_META).map(([k, m]) => { const n = list.items.filter(i => i.kind === k).length; return n ? `<button class="kindchip ${listKind === k ? 'on' : ''}" data-kind="${k}" style="--k:${m.color}">${m.icon}${m.label} ${n}</button>` : ''; }).join('')}
+  </div>` : ''}</div>`;
+  if (!list.items.length) return head + `<div class="empty">今月・来月に渡すものはありません 🎉</div>`;
+  const shown = sortItems(filterItems(list.items, listKind), listSort, fanName);
+  return head + GROUPS.map(([st, label]) => {
+    const its = shown.filter(i => i.status === st);
     if (!its.length) return '';
     return `<div class="group ${st}"><div class="glabel">${st === 'overdue' ? '⚠ ' : ''}${label}<span>${its.length}</span></div>${its.map(itemRow).join('')}</div>`;
-  }).join('');
+  }).join('') || '<div class="empty">この種類の渡すものはありません</div>';
 }
 
 function itemRow(i) {
   const f = data.fans[i.fanId] || {};
   const plan = planOn(f, i.due) || planOn(f, today) || (f.planHistory || []).at(-1)?.planId;
+  const meta = KIND_META[i.kind] || { icon: '・', label: '', color: '#777' };
   const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
   const btns = [`<button class="btn primary deliver">渡した</button>`,
     i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
     i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : '',
     i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
-  return `<div class="item" data-key="${h(i.key)}"><div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
-    <div class="what">${h(i.title)} ${tags}</div><div class="due">${i.scheduled ? '予定 ' : ''}${md(i.due)}</div><div class="btns">${btns}</div></div>`;
+  return `<div class="item" data-key="${h(i.key)}" data-kind="${h(i.kind)}">
+    <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
+    <div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
+    <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
+    <div class="btns">${btns}</div></div>`;
 }
 
 function renderNotices(n) {
@@ -1001,15 +1056,21 @@ function renderFans() {
   const filters = [['active', '在籍', f => f.status === 'active'], ['new', '新規（1か月以内）', f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0],
     ['leftCandidate', '退会候補', f => f.status === 'leftCandidate'], ['left', '退会', f => f.status === 'left'], ['all', 'すべて', () => true]];
   const pred = (filters.find(x => x[0] === fanFilter) || filters[0])[2];
-  const rows = all.filter(pred).sort((a, b) => Number(a.memberNo) - Number(b.memberNo) || compare(a.memberNo, b.memberNo)).map(f => {
+  const planOrder = id => (planById(data.settings, id) || { order: 99 }).order;
+  const rows = sortFanRows(all.filter(pred).map(f => {
     const cur = planOn(f, today) || f.planHistory.at(-1).planId;
-    const r12 = data.settings.rules.filter(r => r.kind === 'tenure').map(r => reachDate(f, r.months)).filter(d => d && compare(d, today) >= 0).sort()[0];
-    return `<tr><td class="num">${h(f.memberNo)}</td><td><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(cur)}</td>
-      <td>${STATUS_LABEL[f.status]}</td><td>${tenureMonths(f)}か月</td><td>${r12 ? ymd(r12) : '-'}</td><td>${f.birthday ? f.birthday.replace('-', '/') : '-'}</td>
-      <td>${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</td></tr>`;
-  }).join('');
+    const next = data.settings.rules.filter(r => r.kind === 'tenure').map(r => reachDate(f, r.months)).filter(d => d && compare(d, today) >= 0).sort()[0] || null;
+    return { f, memberNo: f.memberNo, name: f.name, plan: planOrder(cur), planId: cur, status: ['active', 'leftCandidate', 'left'].indexOf(f.status), months: tenureMonths(f), next, birthday: f.birthday };
+  }), fanSort.key, fanSort.dir);
+  const cols = [['memberNo', 'No', 'num'], ['name', '名前', ''], ['plan', 'プラン', ''], ['status', '状態', ''], ['months', '在籍', 'r'], ['next', '次の継続特典', ''], ['birthday', '誕生日', '']];
+  const arrow = k => (fanSort.key === k ? (fanSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
+  const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
+  const body = rows.map(({ f, planId, months, next }) => `<tr><td class="num">${h(f.memberNo)}</td><td><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
+      <td><span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></td><td class="r">${months}か月</td>
+      <td>${next ? `<b>あと${daysTo(next)}日</b> <span class="muted">（${ymd(next)}）</span>` : '<span class="muted">-</span>'}</td><td>${f.birthday ? f.birthday.replace('-', '/') : '<span class="muted">-</span>'}</td>
+      <td>${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</td></tr>`).join('');
   return `<div class="chips">${filters.map(([k, l, p]) => `<button class="chip ${fanFilter === k ? 'on' : ''}" data-filter="${k}">${l} ${all.filter(p).length}</button>`).join('')}</div>
-    ${rows ? `<div class="scroll"><table><thead><tr><th>No</th><th>名前</th><th>プラン</th><th>状態</th><th>在籍</th><th>次の継続特典</th><th>誕生日</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : '<div class="empty">該当するファンはいません</div>'}`;
+    ${body ? `<div class="scroll"><table class="fans"><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-key="${k}">${l}${arrow(k)}</th>`).join('')}<th></th></tr></thead><tbody>${body}</tbody></table></div>` : '<div class="empty">該当するファンはいません</div>'}`;
 }
 
 function recordTitle(r) {
@@ -1053,6 +1114,8 @@ function wire(list) {
   $('#extraBtn').onclick = openExtra;
   $('#settingsBtn').onclick = openSettings;
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; $('#tabContent').innerHTML = renderTab(); wireTab(); document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); });
+  document.querySelectorAll('.sortbtn').forEach(b => b.onclick = () => { listSort = b.dataset.sort; render(); });
+  document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
   const byKey = Object.fromEntries(list.items.map(i => [i.key, i]));
   document.querySelectorAll('#list .item').forEach(row => {
     const it = byKey[row.dataset.key];
@@ -1071,6 +1134,11 @@ function wire(list) {
 function wireTab() {
   document.querySelectorAll('.fanlink').forEach(b => b.onclick = () => openFan(b.dataset.id));
   document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; $('#tabContent').innerHTML = renderTab(); wireTab(); });
+  document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
+    const k = th.dataset.key;
+    fanSort = fanSort.key === k ? { key: k, dir: fanSort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: 'asc' };
+    $('#tabContent').innerHTML = renderTab(); wireTab();
+  });
   document.querySelectorAll('.leftbtn').forEach(b => b.onclick = () => openDialog('退会を確定', `<p>${h(fanName(b.dataset.id))}さんを退会として記録します。再入会したときは、在籍していた月数から続きを数えます。</p><label>退会日<input type="date" name="date" value="${today}" required></label>`,
     { ok: '退会確定', danger: true, onOk: dl => commit(touchFan(confirmLeft(data, b.dataset.id, dl.querySelector('[name=date]').value), b.dataset.id)) }));
   document.querySelectorAll('.editrec').forEach(b => b.onclick = () => {
@@ -1134,6 +1202,7 @@ function openFan(id) {
       const next = JSON.parse(JSON.stringify(data));
       next.fans[id].birthday = bday;
       next.fans[id].birthdayUpdatedAt = new Date().toISOString();
+      if (bday && !next.fans[id].birthdaySetOn) next.fans[id].birthdaySetOn = today;
       return commit(touchFan(next, id));
     },
   });
