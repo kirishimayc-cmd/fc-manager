@@ -828,7 +828,7 @@ function sortItems(items, mode, nameOf) {
   const by = {
     due: tie,
     name: (a, b) => cmpStr(nameOf(a.fanId), nameOf(b.fanId)) || cmpStr(a.due, b.due),
-    kind: (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || tie(a, b),
+    kind: (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || cmpStr(a.title || '', b.title || '') || tie(a, b),
   }[mode] || tie;
   return [...items].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || by(a, b));
 }
