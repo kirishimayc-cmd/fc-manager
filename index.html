@@ -42,6 +42,7 @@ label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:cente
 .dropcover{display:none}body.dragging .dropcover{display:flex;position:fixed;inset:10px;border:3px dashed var(--wine);border-radius:16px;background:#fff9;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--wine);pointer-events:none;z-index:10}
 @media(max-width:760px){.item{grid-template-columns:1fr auto}.what{grid-column:1/-1}.btns{grid-column:1/-1;justify-content:flex-start}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
 .notice.warn-strong{background:#fdecea;border-color:#f5b5ad;color:#8a1c12;font-weight:600}
+.fanpick{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 10px}label.inline-row{display:flex;align-items:center;gap:6px;font-weight:500;margin:4px 0}label.inline-row input{width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -320,7 +321,10 @@ function computeList(data, today) {
     if (r.type === 'carry') carries.set(r.key, latest([...(carries.has(r.key) ? [carries.get(r.key)] : []), r]));
     if (r.type === 'schedule') schedules.set(r.key, latest([...(schedules.has(r.key) ? [schedules.get(r.key)] : []), r]));
   }
-  let items = generate(data, today).filter(i => !settled.has(i.key));
+  const extras = recs.filter(r => r.type === 'extra' && data.fans[r.fanId]).map(r => ({
+    key: r.key, fanId: r.fanId, ruleId: 'extra', kind: 'extra', title: r.title, due: r.due, extraId: r.id,
+    fanLeft: data.fans[r.fanId].status === 'left', count: 1, coversKeys: [], scheduled: false }));
+  let items = [...generate(data, today), ...extras].filter(i => !settled.has(i.key));
   items.forEach(i => byKey.set(i.key, i));
   for (const i of items) {
     const s = schedules.get(i.key);
@@ -407,6 +411,16 @@ function removeRecord(data, recordId, ctx) {
 function editRecord(data, recordId, patch, ctx) {
   data = copyData(data);
   Object.assign(data.records[recordId], patch, { updatedAt: ctx.now, device: ctx.device });
+  return data;
+}
+
+function addExtra(data, fanIds, { title, due }, ctx) {
+  data = copyData(data);
+  for (const fanId of fanIds) {
+    let id = newId(ctx.device);
+    while (data.records[id]) id = newId(ctx.device);
+    data.records[id] = { id, key: `extra|${fanId}|${id}`, fanId, type: 'extra', title, due, device: ctx.device, updatedAt: ctx.now, deleted: false };
+  }
   return data;
 }
 
@@ -885,7 +899,7 @@ function render() {
     <header class="top">
       <div class="brand"><b>${h(data.settings.clubName)}</b>
         <span class="sum">在籍 ${fans.filter(f => f.status === 'active').length}人<i>｜</i>今月 ${count('thisMonth')}件<i>｜</i><span class="${count('overdue') ? 'warn' : ''}">期限切れ ${count('overdue')}件</span></span></div>
-      <div class="actions"><button class="btn ghost" id="csvBtn">CSV取込</button><button class="btn ghost" id="settingsBtn">設定</button></div>
+      <div class="actions"><button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button><button class="btn ghost" id="settingsBtn">設定</button></div>
     </header>
     <div id="banner"></div>
     <main>
@@ -915,7 +929,8 @@ function itemRow(i) {
   const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
   const btns = [`<button class="btn primary deliver">渡した</button>`,
     i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
-    i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : ''].join('');
+    i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : '',
+    i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
   return `<div class="item" data-key="${h(i.key)}"><div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
     <div class="what">${h(i.title)} ${tags}</div><div class="due">${i.scheduled ? '予定 ' : ''}${md(i.due)}</div><div class="btns">${btns}</div></div>`;
 }
@@ -996,6 +1011,7 @@ function renderRevenue() {
 // ---------- wiring ----------
 function wire(list) {
   $('#csvBtn').onclick = () => $('#csvInput').click();
+  $('#extraBtn').onclick = openExtra;
   $('#settingsBtn').onclick = openSettings;
   document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; $('#tabContent').innerHTML = renderTab(); wireTab(); document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); });
   const byKey = Object.fromEntries(list.items.map(i => [i.key, i]));
@@ -1004,6 +1020,8 @@ function wire(list) {
     row.querySelector('.deliver').onclick = () => openDeliver(it);
     const s = row.querySelector('.sched'); if (s) s.onclick = () => openSchedule(it);
     const c = row.querySelector('.carry'); if (c) c.onclick = () => openCarry(it);
+    const x = row.querySelector('.cancelExtra');
+    if (x) x.onclick = () => openDialog('特典を取り消す', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」を取り消します。</p>`, { ok: '取り消す', danger: true, onOk: () => commit(removeRecord(data, it.extraId, ctx())) });
     const d = row.querySelector('.dismiss'); if (d) d.onclick = () => openDialog('対象外にする', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」をリストから外します。</p><label>メモ<input name="memo" placeholder="例：退会のため"></label>`,
       { ok: '対象外にする', onOk: dl => commit(dismiss(data, it, dl.querySelector('[name=memo]').value, ctx())) });
   });
@@ -1203,6 +1221,27 @@ function openRuleEditor(ruleId, preset = {}) {
   d.querySelector('[name=kind]').onchange = sync; sync();
   const del = d.querySelector('#delRule');
   if (del) del.onclick = () => { if (confirm('このルールを削除しますか？（渡した記録は残ります）')) { d.close(); commit(withSettings(s => { s.rules = s.rules.filter(x => x.id !== ruleId); })); } };
+}
+
+function openExtra() {
+  const fans = Object.values(data.fans).filter(f => f.status !== 'left').sort((a, b) => Number(a.memberNo) - Number(b.memberNo) || compare(a.memberNo, b.memberNo));
+  const d = openDialog('特典を追加（ルーレット当選など）', `
+    <label>内容<input name="title" placeholder="例：ルーレット当選：直筆チェキ" required></label>
+    <label>いつまでに渡す<input type="date" name="due" value="${endOfMonth(today)}" required></label>
+    <div class="field">誰に（複数選べます）<input id="fanSearch" placeholder="名前で絞り込み" style="display:block;width:100%;margin-top:4px"></div>
+    <div class="fanpick">${fans.map(f => `<label class="inline-row"><input type="checkbox" name="fan" value="${h(f.memberNo)}"> ${h(f.name)} ${badge(planOn(f, today) || f.planHistory.at(-1).planId)}</label>`).join('')}</div>`, {
+    ok: '追加する', wide: true, onOk: dl => {
+      const ids = [...dl.querySelectorAll('[name=fan]:checked')].map(x => x.value);
+      const title = dl.querySelector('[name=title]').value.trim(), due = dl.querySelector('[name=due]').value;
+      if (!ids.length) { alert('渡す人を選んでください'); return false; }
+      if (!title || !due) { alert('内容と期限を入れてください'); return false; }
+      return commit(addExtra(data, ids, { title, due }, ctx()));
+    },
+  });
+  d.querySelector('#fanSearch').oninput = e => {
+    const q = e.target.value.trim();
+    d.querySelectorAll('.fanpick label').forEach(l => { l.style.display = !q || l.textContent.includes(q) ? '' : 'none'; });
+  };
 }
 
 if (typeof startApp === 'function') window.addEventListener('DOMContentLoaded', () => startApp(window.__TEST_DISK__ ? createMemoryStorage({ disk: window.__TEST_DISK__, deviceName: 'PC-TEST' }) : productionStorage()));
