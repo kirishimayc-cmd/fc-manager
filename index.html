@@ -7,7 +7,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ファンクラブ管理ツール</title>
 <style>:root{--wine:#8e2443;--wine-soft:#f8eef1;--ink:#26222a;--muted:#77707c;--line:#ebe5ea;--bg:#faf7f8;--warn:#b42318;font-family:system-ui,"Segoe UI","Yu Gothic UI",sans-serif;color:var(--ink);background:var(--bg)}
-*{box-sizing:border-box}body{margin:0;padding:14px 18px 30px;max-width:1040px;margin:auto}
+*{box-sizing:border-box}body{margin:0}
 h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:4px 0 10px}h4{font-size:14px;margin:16px 0 6px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 10px}
@@ -52,6 +52,27 @@ label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:cente
 table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.fans th.sortable:hover{color:var(--wine)}table.fans tbody tr:hover{background:#fdf6f8}table.fans td{padding:9px 8px}
 .st{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}.st-active{background:#e9f6ee;color:#1e7a43}.st-leftCandidate{background:#fff1d6;color:#8a5a00}.st-left{background:#eee;color:#666}
 @media(max-width:760px){.item{grid-template-columns:80px 1fr}.what,.btns{grid-column:1/-1}}
+
+.shell{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+.side{background:#2b1d24;color:#f3e9ee;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.side .club{font-weight:800;font-size:15px;color:#fff;padding:4px 10px 16px;border-bottom:1px solid #ffffff22;margin-bottom:10px;line-height:1.4}
+.side nav{display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:#e8dbe1;font:inherit;font-size:14px;padding:10px 12px;border-radius:8px;cursor:pointer}
+.nav:hover{background:#ffffff14}.nav.on{background:#ffffff;color:var(--wine);font-weight:700}.nav .ic{width:20px;text-align:center}
+.nav .cnt{margin-left:auto;background:#ffffff2a;border-radius:999px;padding:0 8px;font-size:12px}.nav .cnt.red{background:#e0434f;color:#fff}.nav.on .cnt{background:#f3e3e8;color:var(--wine)}.nav.on .cnt.red{background:#e0434f;color:#fff}
+.sidefoot{margin-top:auto;font-size:11px;color:#bfaab4;line-height:1.6;padding:0 8px}
+.mainarea{padding:18px 26px 40px;max-width:1080px;width:100%}
+.pagehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.pagehead h1{margin:0;font-size:21px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;font:inherit;cursor:pointer}.kpi:hover{border-color:var(--wine)}
+.kpi span{display:block;color:var(--muted);font-size:12px}.kpi b{font-size:26px;letter-spacing:.5px}.kpi.red b{color:var(--warn)}.kpi.red{background:#fff7f6;border-color:#f5c8c2}
+.dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dashgrid .span2{grid-column:1/-1}.dashgrid .panel{margin:0}
+.secthead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.secthead h2{margin:0}
+#dashUrgent .item{grid-template-columns:96px minmax(120px,170px) 1fr auto}.more{text-align:right;margin:6px 4px 0}
+ul.dl{list-style:none;margin:0;padding:0}ul.dl li{padding:8px 0;border-bottom:1px solid #f3eff2}.when{display:inline-block;min-width:68px;font-weight:700;color:var(--wine)}
+.names{line-height:1.9;margin:4px 0 8px}
+.bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px}.bar b{text-align:right}
+@media(max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.side nav{flex-direction:row;flex-wrap:wrap}.nav{width:auto}.sidefoot{display:none}.kpis{grid-template-columns:1fr 1fr}.dashgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -854,7 +875,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' };
+let storage, data, today, lastMtime = 0, page = 'dashboard', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' };
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -975,28 +996,73 @@ function showRecentSaveBanner() {
 }
 
 // ---------- main render ----------
+const PAGES = [['dashboard', '🏠', 'ダッシュボード'], ['perks', '🎁', '継続特典'], ['members', '👥', '会員名簿'], ['records', '📒', '渡した記録'], ['revenue', '💴', '収益'], ['settings', '⚙', '設定']];
+
 function render() {
   today = todayLocal();
   const list = computeList(data, today);
-  const fans = Object.values(data.fans);
   const count = s => list.items.filter(i => i.status === s).length;
+  const urgent = count('overdue') + count('thisMonth');
+  const title = (PAGES.find(p => p[0] === page) || PAGES[0])[2];
   $('#app').innerHTML = `
-    <header class="top">
-      <div class="brand"><b>${h(data.settings.clubName)}</b>
-        <span class="sum">在籍 ${fans.filter(f => f.status === 'active').length}人<i>｜</i>今月 ${count('thisMonth')}件<i>｜</i><span class="${count('overdue') ? 'warn' : ''}">期限切れ ${count('overdue')}件</span></span></div>
-      <div class="actions"><button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button><button class="btn ghost" id="settingsBtn">設定</button></div>
-    </header>
-    <div id="banner"></div>
-    <main>
-      <section id="list" class="panel">${renderList(list)}</section>
-      ${renderNotices(list.notices)}
-      <section class="panel">
-        <nav class="tabs">${[['fans', 'ファン一覧'], ['records', '渡した記録'], ['revenue', '収益']].map(([k, l]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</nav>
-        <div id="tabContent">${renderTab()}</div>
+    <div class="shell">
+      <aside class="side">
+        <div class="club">${h(data.settings.clubName)}</div>
+        <nav>${PAGES.map(([k, ic, l]) => `<button class="nav ${page === k ? 'on' : ''}" data-page="${k}"><span class="ic">${ic}</span>${l}${k === 'perks' && urgent ? `<span class="cnt ${count('overdue') ? 'red' : ''}">${urgent}</span>` : ''}</button>`).join('')}</nav>
+        <div class="sidefoot">このPC：${h(storage.deviceName())}<br>CSVは画面のどこにでもドロップできます</div>
+      </aside>
+      <section class="mainarea">
+        <header class="pagehead"><h1>${title}</h1>
+          <div class="actions"><button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button></div></header>
+        <div id="banner"></div>
+        <div id="page">${renderPage(list)}</div>
       </section>
-    </main>
-    <p class="foot">CSV・v4データは画面のどこにドロップしても読み込めます　／　このPC：${h(storage.deviceName())}</p>`;
+    </div>`;
   wire(list);
+}
+
+function renderPage(list) {
+  if (page === 'perks') return `<section id="list" class="panel">${renderList(list)}</section>${renderNotices(list.notices)}`;
+  if (page === 'members') return `<section class="panel"><div id="tabContent">${renderFans()}</div></section>`;
+  if (page === 'records') return `<section class="panel"><div id="tabContent">${renderRecords()}</div></section>`;
+  if (page === 'revenue') return `<section class="panel"><div id="tabContent">${renderRevenue()}</div></section>`;
+  if (page === 'settings') return renderSettings();
+  return renderDashboard(list);
+}
+
+function renderDashboard(list) {
+  const fans = Object.values(data.fans);
+  const active = fans.filter(f => f.status === 'active');
+  const count = s => list.items.filter(i => i.status === s).length;
+  const monthly = active.reduce((sum, f) => sum + ((planById(data.settings, planOn(f, today)) || {}).price || 0), 0);
+  const urgent = sortItems(list.items.filter(i => i.status === 'overdue' || i.status === 'thisMonth'), 'due', fanName);
+  const soon = addMonths(today, 2);
+  const milestones = [];
+  for (const f of active) for (const r of data.settings.rules.filter(r => r.kind === 'tenure')) {
+    const d = reachDate(f, r.months);
+    if (d && compare(d, today) >= 0 && compare(d, soon) <= 0) milestones.push({ f, months: r.months, d, label: (r.labelByPlan || {})[planOn(f, d)] || r.label });
+  }
+  milestones.sort((a, b) => compare(a.d, b.d));
+  const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
+  const recent = addMonths(today, -1);
+  const newcomers = fans.filter(f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0);
+  const candidates = fans.filter(f => f.status === 'leftCandidate');
+  const planRows = data.settings.plans.map(p => ({ p, n: active.filter(f => planOn(f, today) === p.id).length }));
+  const maxN = Math.max(1, ...planRows.map(x => x.n));
+  const kpi = (label, val, cls = '', to = '') => `<button class="kpi ${cls}" ${to ? `data-goto="${to}"` : ''}><span>${label}</span><b>${val}</b></button>`;
+  const who = f => `<button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button>`;
+  return `
+    <div class="kpis">${kpi('在籍', active.length + '人', '', 'members')}${kpi('今月渡す', count('thisMonth') + '件', '', 'perks')}${kpi('期限切れ', count('overdue') + '件', count('overdue') ? 'red' : '', 'perks')}${kpi('月額収益', yen(monthly), '', 'revenue')}</div>
+    ${renderNotices(list.notices)}
+    <div class="dashgrid">
+      <section class="panel span2"><div class="secthead"><h2>⚠ 急ぎ（期限切れ・今月）</h2><button class="link" data-goto="perks">すべて見る →</button></div>
+        <div id="dashUrgent">${urgent.length ? urgent.slice(0, 5).map(itemRow).join('') + (urgent.length > 5 ? `<p class="muted small more">ほか ${urgent.length - 5}件</p>` : '') : '<div class="empty">急ぎの特典はありません 🎉</div>'}</div></section>
+      <section class="panel"><h2>📅 もうすぐの節目</h2>${milestones.length ? `<ul class="dl">${milestones.slice(0, 8).map(m => `<li><span class="when">あと${daysTo(m.d)}日</span>${who(m.f)} ${badge(planOn(m.f, m.d))}<div class="muted small">${m.months}か月：${h(m.label)}（${ymd(m.d)}）</div></li>`).join('')}</ul>` : '<p class="muted">2か月以内に節目を迎える人はいません</p>'}</section>
+      <section class="panel"><h2>👥 新規・退会候補</h2>
+        <h4>新規（1か月以内） ${newcomers.length}人</h4>${newcomers.length ? `<p class="names">${newcomers.map(who).join('、')}</p>` : '<p class="muted small">なし</p>'}
+        <h4>退会候補 ${candidates.length}人</h4>${candidates.length ? `<p class="names">${candidates.map(who).join('、')}</p><button class="link small" data-goto="members">会員名簿で確認する →</button>` : '<p class="muted small">なし</p>'}</section>
+      <section class="panel span2"><h2>📊 プラン別の人数（在籍）</h2><div class="bars">${planRows.map(({ p, n }) => `<div class="bar"><span class="bl">${badge(p.id)}</span><span class="bt"><i style="width:${(n / maxN) * 100}%;background:${PLAN_COLORS[p.id] || '#999'}"></i></span><b>${n}人</b></div>`).join('')}</div></section>
+    </div>`;
 }
 
 function renderList(list) {
@@ -1036,12 +1102,6 @@ function renderNotices(n) {
   if (n.missingBirthday.length) parts.push(`<div class="notice">🎂 誕生日が未入力の人：${n.missingBirthday.map(id => `<button class="link fanlink" data-id="${h(id)}">${h(fanName(id))}</button>`).join('、')}</div>`);
   for (const u of n.undecidedMilestones) parts.push(`<div class="notice">⭐ もうすぐ${u.months}か月の人がいます（${u.memberNos.map(fanName).map(h).join('、')}）。${u.months}か月の特典を決めますか？ <button class="link" id="decide${u.months}">特典を決める</button></div>`);
   return parts.length ? `<section id="notices">${parts.join('')}</section>` : '';
-}
-
-function renderTab() {
-  if (tab === 'records') return renderRecords();
-  if (tab === 'revenue') return renderRevenue();
-  return renderFans();
 }
 
 function tenureMonths(f) {
@@ -1112,12 +1172,12 @@ function renderRevenue() {
 function wire(list) {
   $('#csvBtn').onclick = () => $('#csvInput').click();
   $('#extraBtn').onclick = openExtra;
-  $('#settingsBtn').onclick = openSettings;
-  document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; $('#tabContent').innerHTML = renderTab(); wireTab(); document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); });
+  document.querySelectorAll('.nav').forEach(b => b.onclick = () => { page = b.dataset.page; render(); window.scrollTo(0, 0); });
+  document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
   document.querySelectorAll('.sortbtn').forEach(b => b.onclick = () => { listSort = b.dataset.sort; render(); });
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
   const byKey = Object.fromEntries(list.items.map(i => [i.key, i]));
-  document.querySelectorAll('#list .item').forEach(row => {
+  document.querySelectorAll('#page .item').forEach(row => {
     const it = byKey[row.dataset.key];
     row.querySelector('.deliver').onclick = () => openDeliver(it);
     const s = row.querySelector('.sched'); if (s) s.onclick = () => openSchedule(it);
@@ -1128,16 +1188,17 @@ function wire(list) {
       { ok: '対象外にする', onOk: dl => commit(dismiss(data, it, dl.querySelector('[name=memo]').value, ctx())) });
   });
   for (const u of list.notices.undecidedMilestones) { const b = $('#decide' + u.months); if (b) b.onclick = () => openRuleEditor(null, { kind: 'tenure', months: u.months }); }
+  if (page === 'settings') wireSettings();
   wireTab();
 }
 
 function wireTab() {
   document.querySelectorAll('.fanlink').forEach(b => b.onclick = () => openFan(b.dataset.id));
-  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; $('#tabContent').innerHTML = renderTab(); wireTab(); });
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; $('#tabContent').innerHTML = renderFans(); wireTab(); });
   document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
     const k = th.dataset.key;
     fanSort = fanSort.key === k ? { key: k, dir: fanSort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: 'asc' };
-    $('#tabContent').innerHTML = renderTab(); wireTab();
+    $('#tabContent').innerHTML = renderFans(); wireTab();
   });
   document.querySelectorAll('.leftbtn').forEach(b => b.onclick = () => openDialog('退会を確定', `<p>${h(fanName(b.dataset.id))}さんを退会として記録します。再入会したときは、在籍していた月数から続きを数えます。</p><label>退会日<input type="date" name="date" value="${today}" required></label>`,
     { ok: '退会確定', danger: true, onOk: dl => commit(touchFan(confirmLeft(data, b.dataset.id, dl.querySelector('[name=date]').value), b.dataset.id)) }));
@@ -1256,30 +1317,35 @@ function previewV4(v4) {
 }
 
 // ---------- settings ----------
-function openSettings() {
-  const rules = data.settings.rules.map(r => `<tr><td>${h(KIND_LABEL[r.kind])}${r.months && r.kind !== 'tenure' ? `（${r.months}か月）` : ''}${r.kind === 'tenure' ? `（${r.months}か月）` : ''}</td>
+function renderSettings() {
+  const rules = data.settings.rules.map(r => `<tr><td>${h(KIND_LABEL[r.kind])}${r.months ? `（${r.months}か月）` : ''}</td>
     <td>${h(r.label)}</td><td>${r.planIds.map(badge).join('')}</td><td class="nowrap"><button type="button" class="btn small ghost editrule" data-id="${h(r.id)}">編集</button></td></tr>`).join('');
-  const d = openDialog('設定', `
-    <label>ファンクラブ名<input name="club" value="${h(data.settings.clubName)}"></label>
-    <label>このPCの名前（もう1台と区別するため）<input name="device" value="${h(storage.deviceName())}"></label>
-    <h4>特典ルール <button type="button" class="btn small ghost" id="addRule">＋追加</button></h4>
-    <table><tbody>${rules}</tbody></table>
-    <h4>もう1台のアカウントと共有</h4>
-    ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
-    <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : ''}
-    ${storage.forgetFile ? '<p class="small"><button type="button" class="link" id="switchShared">共有されたデータに切り替える／ファイルを選び直す</button></p>' : ''}
-    <h4>データ</h4>
-    <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
-    <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">バックアップから読み込む</button></div>`, {
-    ok: '保存', wide: true, onOk: dl => {
-      const club = dl.querySelector('[name=club]').value.trim(), dev = dl.querySelector('[name=device]').value.trim();
-      if (dev && dev !== storage.deviceName()) storage.setDeviceName(dev);
-      if (club && club !== data.settings.clubName) return commit(withSettings(s => { s.clubName = club; }));
-      render();
-    },
-  });
+  return `
+    <section class="panel"><h2>基本</h2>
+      <label>ファンクラブ名<input name="club" value="${h(data.settings.clubName)}"></label>
+      <label>このPCの名前（もう1台と区別するため）<input name="device" value="${h(storage.deviceName())}"></label>
+      <button class="btn primary" id="saveSettings">保存</button></section>
+    <section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
+      <table><tbody>${rules}</tbody></table></section>
+    <section class="panel"><h2>もう1台のアカウントと共有</h2>
+      ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
+      <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : '<p class="muted small">このモードでは共有できません</p>'}
+      ${storage.forgetFile ? '<p class="small"><button type="button" class="link" id="switchShared">共有されたデータに切り替える／ファイルを選び直す</button></p>' : ''}</section>
+    <section class="panel"><h2>データ</h2>
+      <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
+      <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">バックアップから読み込む</button></div></section>`;
+}
+
+function wireSettings() {
+  const d = $('#page');
+  d.querySelector('#saveSettings').onclick = () => {
+    const club = d.querySelector('[name=club]').value.trim(), dev = d.querySelector('[name=device]').value.trim();
+    if (dev && dev !== storage.deviceName()) storage.setDeviceName(dev);
+    if (club && club !== data.settings.clubName) return commit(withSettings(s => { s.clubName = club; }));
+    render();
+  };
   const sw = d.querySelector('#switchShared');
-  if (sw) sw.onclick = () => { if (confirm('今開いているデータから離れて、Googleドライブのファイルを選び直します。よろしいですか？（データは消えません）')) { d.close(); storage.forgetFile(); boot(); } };
+  if (sw) sw.onclick = () => { if (confirm('今開いているデータから離れて、Googleドライブのファイルを選び直します。よろしいですか？（データは消えません）')) { storage.forgetFile(); boot(); } };
   const sb = d.querySelector('#shareBtn');
   if (sb) sb.onclick = async () => {
     const email = d.querySelector('#shareEmail').value.trim();
@@ -1293,7 +1359,7 @@ function openSettings() {
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
     a.download = `fan_data_export_${today}.json`; a.click();
   };
-  d.querySelector('#importBtn').onclick = () => { d.close(); $('#csvInput').click(); };
+  d.querySelector('#importBtn').onclick = () => $('#csvInput').click();
 }
 
 function withSettings(fn) {
