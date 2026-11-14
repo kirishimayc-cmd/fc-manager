@@ -1270,7 +1270,7 @@ function openSettings() {
     ${storage.forgetFile ? '<p class="small"><button type="button" class="link" id="switchShared">共有されたデータに切り替える／ファイルを選び直す</button></p>' : ''}
     <h4>データ</h4>
     <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
-    <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">v4/書き出しデータを読み込む</button></div>`, {
+    <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">バックアップから読み込む</button></div>`, {
     ok: '保存', wide: true, onOk: dl => {
       const club = dl.querySelector('[name=club]').value.trim(), dev = dl.querySelector('[name=device]').value.trim();
       if (dev && dev !== storage.deviceName()) storage.setDeviceName(dev);
