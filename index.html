@@ -19,7 +19,7 @@ h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size
 .link{background:none;border:0;padding:0;color:var(--wine);text-decoration:underline;cursor:pointer;font:inherit}
 .group{margin-top:6px}.glabel{font-size:12px;font-weight:700;color:var(--muted);padding:8px 2px 4px;border-bottom:1px solid var(--line)}.glabel span{margin-left:6px;background:#eee;border-radius:9px;padding:0 7px}
 .group.overdue .glabel{color:var(--warn)}.group.overdue .glabel span{background:#fde7e5;color:var(--warn)}
-.item{display:grid;grid-template-columns:minmax(150px,1.1fr) 2fr 70px auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid #f3eff2}
+.item{display:grid;grid-template-columns:minmax(150px,1.1fr) 2fr 90px auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid #f3eff2}
 .item:hover{background:#fdfafb}.who{font-weight:600}.due{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}.group.overdue .due{color:var(--warn);font-weight:700}.btns{display:flex;gap:6px;justify-content:flex-end}
 .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:4px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);vertical-align:1px}
 .tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:#eef3fb;color:#2f5aa0}.tag.strong{background:#fff1d6;color:#8a5a00;font-weight:700}.tag.gray{background:#eee;color:#666}
@@ -772,7 +772,7 @@ let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
-const md = d => (d ? `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : '');
+const md = d => (d ? `${d.slice(0, 4) !== todayLocal().slice(0, 4) ? d.slice(0, 4) + '/' : ''}${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}` : '');
 const ymd = d => (d ? d.replaceAll('-', '/') : '');
 const ctx = () => ({ device: storage.deviceName(), now: new Date().toISOString() });
 const fanName = id => (data.fans[id] ? data.fans[id].name : `#${id}`);
