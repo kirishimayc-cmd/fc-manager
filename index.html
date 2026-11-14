@@ -73,6 +73,16 @@ ul.dl{list-style:none;margin:0;padding:0}ul.dl li{padding:8px 0;border-bottom:1p
 .names{line-height:1.9;margin:4px 0 8px}
 .bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px}.bar b{text-align:right}
 @media(max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.side nav{flex-direction:row;flex-wrap:wrap}.nav{width:auto}.sidefoot{display:none}.kpis{grid-template-columns:1fr 1fr}.dashgrid{grid-template-columns:1fr}}
+
+.rosterbar{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}.rosterrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.rosterrow .chips{margin:0}
+#rosterSearch{width:240px;font-size:14px}
+.planchip{border:1px solid color-mix(in srgb,var(--c,#888) 35%,#fff);background:#fff;color:var(--c,var(--ink));border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.planchip.on{background:var(--c,var(--ink));color:#fff;border-color:var(--c,var(--ink))}
+.rostercount{margin:8px 2px}
+table.roster{font-size:14.5px}table.roster th{font-size:12.5px}table.roster td{padding:12px 10px}
+table.roster td.nm{font-size:16px;font-weight:700;white-space:nowrap}table.roster td.nm .link{color:var(--ink);text-decoration:none}table.roster td.nm .link:hover{color:var(--wine);text-decoration:underline}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:9px;vertical-align:1px}
+.scroll.tall{max-height:calc(100vh - 260px)}
 </style>
 </head>
 <body>
@@ -875,7 +885,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' };
+let storage, data, today, lastMtime = 0, page = 'dashboard', fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1111,26 +1121,48 @@ function tenureMonths(f) {
 }
 
 function renderFans() {
-  const all = Object.values(data.fans);
+  return `<div class="rosterbar">${renderRosterControls()}</div><div id="rosterTable">${renderRosterTable()}</div>`;
+}
+
+const ROSTER_FILTERS = () => {
   const recent = addMonths(today, -1);
-  const filters = [['active', '在籍', f => f.status === 'active'], ['new', '新規（1か月以内）', f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0],
+  return [['active', '在籍', f => f.status === 'active'], ['new', '新規（1か月以内）', f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0],
     ['leftCandidate', '退会候補', f => f.status === 'leftCandidate'], ['left', '退会', f => f.status === 'left'], ['all', 'すべて', () => true]];
+};
+const curPlan = f => planOn(f, today) || f.planHistory.at(-1).planId;
+
+function renderRosterControls() {
+  const all = Object.values(data.fans);
+  const filters = ROSTER_FILTERS();
   const pred = (filters.find(x => x[0] === fanFilter) || filters[0])[2];
-  const planOrder = id => (planById(data.settings, id) || { order: 99 }).order;
-  const rows = sortFanRows(all.filter(pred).map(f => {
-    const cur = planOn(f, today) || f.planHistory.at(-1).planId;
+  const base = all.filter(pred);
+  const plans = [...data.settings.plans].sort((a, b) => b.order - a.order);
+  return `<div class="rosterrow"><input id="rosterSearch" placeholder="🔍 名前で検索" value="${h(fanQuery)}">
+      <div class="chips">${filters.map(([k, l, p]) => `<button class="chip ${fanFilter === k ? 'on' : ''}" data-filter="${k}">${l} ${all.filter(p).length}</button>`).join('')}</div></div>
+    <div class="rosterrow"><span class="ctl-label">プラン</span><button class="planchip ${fanPlan === 'all' ? 'on' : ''}" data-plan="all">すべて ${base.length}</button>${plans.map(p => `<button class="planchip ${fanPlan === p.id ? 'on' : ''}" data-plan="${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">${h(p.name.replace(/プラン$/, ''))} ${base.filter(f => curPlan(f) === p.id).length}</button>`).join('')}</div>`;
+}
+
+function renderRosterTable() {
+  const all = Object.values(data.fans);
+  const filters = ROSTER_FILTERS();
+  const pred = (filters.find(x => x[0] === fanFilter) || filters[0])[2];
+  const q = fanQuery.trim().toLowerCase();
+  const planOrder = id => (planById(data.settings, id) || { order: -1 }).order;
+  const rows = sortFanRows(all.filter(pred).filter(f => fanPlan === 'all' || curPlan(f) === fanPlan).filter(f => !q || f.name.toLowerCase().includes(q) || String(f.memberNo) === q).map(f => {
+    const cur = curPlan(f);
     const next = data.settings.rules.filter(r => r.kind === 'tenure').map(r => reachDate(f, r.months)).filter(d => d && compare(d, today) >= 0).sort()[0] || null;
     return { f, memberNo: f.memberNo, name: f.name, plan: planOrder(cur), planId: cur, status: ['active', 'leftCandidate', 'left'].indexOf(f.status), months: tenureMonths(f), next, birthday: f.birthday };
   }), fanSort.key, fanSort.dir);
   const cols = [['memberNo', 'No', 'num'], ['name', '名前', ''], ['plan', 'プラン', ''], ['status', '状態', ''], ['months', '在籍', 'r'], ['next', '次の継続特典', ''], ['birthday', '誕生日', '']];
   const arrow = k => (fanSort.key === k ? (fanSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
   const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
-  const body = rows.map(({ f, planId, months, next }) => `<tr><td class="num">${h(f.memberNo)}</td><td><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
+  const body = rows.map(({ f, planId, months, next }) => `<tr data-plan="${h(planId)}"><td class="num">${h(f.memberNo)}</td>
+      <td class="nm"><span class="dot" style="background:${PLAN_COLORS[planId] || '#999'}"></span><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
       <td><span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></td><td class="r">${months}か月</td>
       <td>${next ? `<b>あと${daysTo(next)}日</b> <span class="muted">（${ymd(next)}）</span>` : '<span class="muted">-</span>'}</td><td>${f.birthday ? f.birthday.replace('-', '/') : '<span class="muted">-</span>'}</td>
       <td>${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</td></tr>`).join('');
-  return `<div class="chips">${filters.map(([k, l, p]) => `<button class="chip ${fanFilter === k ? 'on' : ''}" data-filter="${k}">${l} ${all.filter(p).length}</button>`).join('')}</div>
-    ${body ? `<div class="scroll"><table class="fans"><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-key="${k}">${l}${arrow(k)}</th>`).join('')}<th></th></tr></thead><tbody>${body}</tbody></table></div>` : '<div class="empty">該当するファンはいません</div>'}`;
+  return `<p class="muted small rostercount">表示中 ${rows.length}人 ／ 在籍 ${all.filter(f => f.status === 'active').length}人</p>
+    ${body ? `<div class="scroll tall"><table class="fans roster"><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-key="${k}">${l}${arrow(k)}</th>`).join('')}<th></th></tr></thead><tbody>${body}</tbody></table></div>` : '<div class="empty">該当するファンはいません</div>'}`;
 }
 
 function recordTitle(r) {
@@ -1194,11 +1226,16 @@ function wire(list) {
 
 function wireTab() {
   document.querySelectorAll('.fanlink').forEach(b => b.onclick = () => openFan(b.dataset.id));
-  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; $('#tabContent').innerHTML = renderFans(); wireTab(); });
+  const redraw = (all = true) => { if (all) { $('#tabContent').innerHTML = renderFans(); } else { $('#rosterTable').innerHTML = renderRosterTable(); } wireTab(); };
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; redraw(); });
+  document.querySelectorAll('.planchip').forEach(b => b.onclick = () => { fanPlan = b.dataset.plan; redraw(); });
+  const rs = $('#rosterSearch');
+  if (rs) rs.oninput = () => { fanQuery = rs.value; redraw(false); };
   document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
     const k = th.dataset.key;
-    fanSort = fanSort.key === k ? { key: k, dir: fanSort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: 'asc' };
-    $('#tabContent').innerHTML = renderFans(); wireTab();
+    const firstDir = k === 'plan' || k === 'months' ? 'desc' : 'asc';   // プランは上位から、在籍は長い順から
+    fanSort = fanSort.key === k ? { key: k, dir: fanSort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: firstDir };
+    redraw(false);
   });
   document.querySelectorAll('.leftbtn').forEach(b => b.onclick = () => openDialog('退会を確定', `<p>${h(fanName(b.dataset.id))}さんを退会として記録します。再入会したときは、在籍していた月数から続きを数えます。</p><label>退会日<input type="date" name="date" value="${today}" required></label>`,
     { ok: '退会確定', danger: true, onOk: dl => commit(touchFan(confirmLeft(data, b.dataset.id, dl.querySelector('[name=date]').value), b.dataset.id)) }));
