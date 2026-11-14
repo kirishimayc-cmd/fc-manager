@@ -342,9 +342,9 @@ function computeList(data, today) {
     hidden.add(i.key);
   }
   const limit = endOfMonth(addMonths(today, 1));
-  const order = { overdue: 0, thisMonth: 1, nextMonth: 2 };
-  items = items.filter(i => !hidden.has(i.key) && compare(i.due, limit) <= 0).map(i => {
-    const status = compare(i.due, today) < 0 ? 'overdue' : monthKey(i.due) === monthKey(today) ? 'thisMonth' : 'nextMonth';
+  const order = { overdue: 0, thisMonth: 1, nextMonth: 2, later: 3 };
+  items = items.filter(i => !hidden.has(i.key) && (compare(i.due, limit) <= 0 || i.kind === 'extra')).map(i => {
+    const status = compare(i.due, today) < 0 ? 'overdue' : monthKey(i.due) === monthKey(today) ? 'thisMonth' : compare(i.due, limit) <= 0 ? 'nextMonth' : 'later';
     const { periodStart, ...rest } = i;
     return { ...rest, status };
   }).sort((a, b) => order[a.status] - order[b.status] || compare(a.due, b.due) || compare(a.fanId, b.fanId));
@@ -479,7 +479,7 @@ function migrateV4(v4, today, ctx) {
   };
   const data = { version: 5, settings, fans: {}, records: {}, meta: { migratedAt: today, lastSavedBy: ctx.device, lastSavedAt: ctx.now } };
   let seq = 0;
-  const add = r => { const id = `${ctx.device}-v4-${(seq++).toString(36)}`; data.records[id] = { id, device: ctx.device, updatedAt: ctx.now, deleted: false, memo: '', ...r }; };
+  const add = r => { const id = `${ctx.device}-v4-${(seq++).toString(36)}`; data.records[id] = { id, src: 'v4', device: ctx.device, updatedAt: ctx.now, deleted: false, memo: '', ...r }; };
 
   const droppedFans = [];
   for (const f of Object.values(v4.state.fans)) {
@@ -545,10 +545,22 @@ function migrateV4(v4, today, ctx) {
 function mergeV4Import(current, migrated, now) {
   if (!current) return migrated;
   const fresh = JSON.parse(JSON.stringify(migrated));
-  for (const f of Object.values(fresh.fans)) f.updatedAt = now;
+  const isV4 = r => r.src === 'v4' || /-v4-[0-9a-z]+$/.test(r.id);
+  // ユーザーが「未渡しに戻す」などで消した引継ぎ記録の key は、もう一度引き継がない
+  const reopened = new Set(Object.values(current.records).filter(r => isV4(r) && r.deleted).map(r => r.key));
+  for (const [id, r] of Object.entries(fresh.records)) {
+    if (reopened.has(r.key) || (current.records[id] && current.records[id].deleted)) delete fresh.records[id];
+  }
+  // ファンは、今のデータで日付が読めない人・いない人だけ v4 の内容で直す（v5でのCSV取込などの変更は残す）
+  const bad = new Set(invalidDateFans(current));
+  for (const [no, f] of Object.entries(fresh.fans)) {
+    if (current.fans[no] && !bad.has(no)) delete fresh.fans[no];
+    else f.updatedAt = now;
+  }
   const m = mergeData(current, fresh);
+  const freshKeys = new Set(Object.values(fresh.records).map(r => r.key));
   for (const r of Object.values(m.records)) {
-    if (r.id.includes('-v4-') && !fresh.records[r.id] && !r.deleted) Object.assign(r, { deleted: true, updatedAt: now });
+    if (isV4(r) && !r.deleted && !fresh.records[r.id] && !freshKeys.has(r.key) && !reopened.has(r.key)) Object.assign(r, { deleted: true, updatedAt: now });
   }
   return m;
 }
@@ -613,7 +625,7 @@ const MSG = {
 const q = s => s.replace(/'/g, "\\'");
 
 function createDriveStorage({ fetchFn, auth, picker, local, deviceName }) {
-  let state = 'needsLogin', fileId = local.get(FILE_KEY), warns = [];
+  let state = 'needsLogin', fileId = local.get(FILE_KEY) || null, warns = [];
   let device = deviceName || local.get(DEV_KEY) || '';
   if (!device) { device = 'PC-' + Math.random().toString(36).slice(2, 6).toUpperCase(); local.set(DEV_KEY, device); }
 
@@ -641,7 +653,10 @@ function createDriveStorage({ fetchFn, auth, picker, local, deviceName }) {
   async function readRemote() {
     const text = await (await call(`${API}/${fileId}?alt=media`)).text();
     if (!text) return null;
-    try { return JSON.parse(text); } catch (e) { throw new Error(MSG.broken); }
+    let d;
+    try { d = JSON.parse(text); } catch (e) { throw new Error(MSG.broken); }
+    if (!d || d.version !== 5 || !d.settings || !d.fans || !d.records) throw new Error('選ばれたファイルはこのツールのデータではありません。「ファイルを選び直す」で fan_data.json を選んでください。');
+    return d;
   }
   function remember(id) { fileId = id; local.set(FILE_KEY, id); state = 'ready'; }
   const withSaver = data => ({ ...data, meta: { ...(data.meta || {}), lastSavedBy: device, lastSavedAt: new Date().toISOString() } });
@@ -658,6 +673,8 @@ function createDriveStorage({ fetchFn, auth, picker, local, deviceName }) {
       } else state = 'needsFile';
     },
     status: () => state,
+    tokenValid: () => auth.signedIn(),
+    forgetFile() { fileId = null; local.set(FILE_KEY, ''); state = 'needsFile'; },
     warnings: () => warns,
     folderName: () => `Googleドライブ / ${FOLDER_NAME}`,
     async login() { await auth.login(); await this.init(); },
@@ -730,24 +747,33 @@ function browserLocal() {
 
 function createGoogleAuth(clientId) {
   const local = browserLocal();
-  let client = null, token = null, exp = 0;
+  let client = null, token = null, exp = 0, pending = null;
   try { const t = JSON.parse(local.get(TOKEN_KEY) || 'null'); if (t && t.exp > Date.now()) { token = t.token; exp = t.exp; } } catch (e) {}
   async function ensure() {
     await loadScript('https://accounts.google.com/gsi/client');
-    if (!client) client = window.google.accounts.oauth2.initTokenClient({ client_id: clientId, scope: SCOPE, callback: () => {} });
-  }
-  async function request(prompt) {
-    await ensure();
-    return new Promise((ok, ng) => {
-      client.callback = r => {
-        if (r.error) return ng(new Error('Googleのログインができませんでした：' + r.error));
+    if (!client) client = window.google.accounts.oauth2.initTokenClient({
+      client_id: clientId, scope: SCOPE,
+      callback: r => {
+        const p = pending; pending = null; if (!p) return;
+        if (r.error) return p.ng(new Error('Googleのログインができませんでした：' + r.error));
         token = r.access_token; exp = Date.now() + (Number(r.expires_in || 3600) - 120) * 1000;
         local.set(TOKEN_KEY, JSON.stringify({ token, exp })); local.set('fcm-v5-signed', '1');
-        ok(token);
-      };
-      client.error_callback = e => ng(new Error(e && e.type === 'popup_closed' ? 'ログイン画面が閉じられました' : 'Googleのログイン画面を開けませんでした（ポップアップがブロックされていないか確認してください）'));
-      client.requestAccessToken({ prompt });
+        p.ok(token);
+      },
+      error_callback: e => {
+        const p = pending; pending = null; if (!p) return;
+        p.ng(new Error(e && e.type === 'popup_closed' ? 'ログイン画面が閉じられました' : 'Googleのログイン画面を開けませんでした（ポップアップがブロックされていないか確認してください）'));
+      },
     });
+  }
+  async function request(prompt) {
+    if (pending) return pending.promise;      // 同時に何度呼ばれても、ログイン画面は1つだけ
+    await ensure();
+    if (pending) return pending.promise;
+    let ok, ng; const promise = new Promise((a, b) => { ok = a; ng = b; });
+    pending = { ok, ng, promise };
+    client.requestAccessToken({ prompt });
+    return promise;
   }
   return {
     signedIn: () => !!token && Date.now() < exp,
@@ -779,7 +805,7 @@ function createGooglePicker(apiKey, appId) {
 
 const PLAN_COLORS = { toriko: '#c99a2e', keiai: '#d4588f', suuhai: '#4f7fb8', ketsuniku: '#b8283f', kyoai: '#7e4cc4' };
 const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '退会' };
-const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月']];
+const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
 let storage, data, today, lastMtime = 0, tab = 'fans', fanFilter = 'active';
@@ -843,17 +869,20 @@ async function boot() {
     data = await storage.load();
     lastMtime = await storage.lastModified();
   } catch (e) {
-    return gate('データを読み込めません', h(e.message), 'もう一度読み込む', async () => boot());
+    return gate('データを読み込めません', h(e.message), 'もう一度読み込む', async () => boot(), repick(storage));
   }
   if (!data) return firstRun();
   render();
   showRecentSaveBanner();
 }
 
-function gate(title, text, label, action) {
-  $('#app').innerHTML = `<div class="gate panel"><h1>${title}</h1><p>${text}</p>${label ? `<button class="btn primary big" id="gateBtn">${label}</button>` : ''}</div>`;
-  if (label) $('#gateBtn').onclick = () => action().catch(e => { if (e.name !== 'AbortError') alert('うまくいきませんでした：' + e.message); });
+function gate(title, text, label, action, extra) {
+  $('#app').innerHTML = `<div class="gate panel"><h1>${title}</h1><p>${text}</p><div class="row">${label ? `<button class="btn primary big" id="gateBtn">${label}</button>` : ''}${extra ? `<button class="btn ghost big" id="gateBtn2">${extra.label}</button>` : ''}</div></div>`;
+  const run = fn => () => fn().catch(e => { if (e.name !== 'AbortError') alert('うまくいきませんでした：' + e.message); });
+  if (label) $('#gateBtn').onclick = run(action);
+  if (extra) $('#gateBtn2').onclick = run(extra.action);
 }
+const repick = storage => (storage.forgetFile ? { label: 'ファイルを選び直す', action: async () => { storage.forgetFile(); boot(); } } : null);
 
 function firstRun() {
   $('#app').innerHTML = `<div class="gate panel"><h1>はじめに</h1>
@@ -861,8 +890,10 @@ function firstRun() {
     <div class="row"><button class="btn primary big" id="fromV4">v4のデータを読み込む</button><button class="btn ghost big" id="fresh">新しく始める</button></div>
     <p style="margin-top:22px"><b>もう1台のアカウント</b>：メインのアカウントから共有された fan_data.json を開きます。</p>
     <div class="row"><button class="btn primary big" id="openShared">共有されたデータを開く</button></div></div>`;
-  $('#fromV4').onclick = () => $('#csvInput').click();
-  $('#fresh').onclick = async () => { const d = emptyData(); d.meta.migratedAt = today; data = null; await commit(d); };
+  const confirmMain = next => openDialog('メインのアカウントですか？', '<p>データはこのアカウントのGoogleドライブに新しく作られます。</p><p><b>もう1台のPC（共有を受ける側）なら、ここではなく「共有されたデータを開く」を押してください。</b>間違えると、別々のデータになってしまいます。</p>',
+    { ok: 'メインのアカウントなので続ける', onOk: next });
+  $('#fromV4').onclick = () => confirmMain(() => { setTimeout(() => $('#csvInput').click(), 0); });
+  $('#fresh').onclick = () => confirmMain(async () => { const d = emptyData(); d.meta.migratedAt = today; data = null; await commit(d); });
   $('#openShared').onclick = async () => {
     try { if (await storage.pickShared()) boot(); } catch (e) { alert(e.message); }
   };
@@ -870,6 +901,14 @@ function firstRun() {
 
 async function refreshIfChanged() {
   if (!data || storage.status() !== 'ready') return;
+  if (storage.tokenValid && !storage.tokenValid()) {
+    const el = $('#banner');
+    if (el && !el.querySelector('.relogin')) {
+      el.innerHTML = `<div class="banner">Googleのログインの期限が切れました。もう1台で付けた記録を見るには更新してください。<button class="btn small primary relogin">更新</button></div>`;
+      el.querySelector('.relogin').onclick = async () => { try { await storage.login(); el.innerHTML = ''; lastMtime = -1; refreshIfChanged(); } catch (e) { alert(e.message); } };
+    }
+    return;
+  }
   try {
     const m = await storage.lastModified();
     if (m && m !== lastMtime) { const d = await storage.load(); if (!d) return; data = d; lastMtime = m; render(); showRecentSaveBanner(); }
@@ -1159,6 +1198,7 @@ function openSettings() {
     <h4>もう1台のアカウントと共有</h4>
     ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
     <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : ''}
+    ${storage.forgetFile ? '<p class="small"><button type="button" class="link" id="switchShared">共有されたデータに切り替える／ファイルを選び直す</button></p>' : ''}
     <h4>データ</h4>
     <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
     <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">v4/書き出しデータを読み込む</button></div>`, {
@@ -1169,6 +1209,8 @@ function openSettings() {
       render();
     },
   });
+  const sw = d.querySelector('#switchShared');
+  if (sw) sw.onclick = () => { if (confirm('今開いているデータから離れて、Googleドライブのファイルを選び直します。よろしいですか？（データは消えません）')) { d.close(); storage.forgetFile(); boot(); } };
   const sb = d.querySelector('#shareBtn');
   if (sb) sb.onclick = async () => {
     const email = d.querySelector('#shareEmail').value.trim();
