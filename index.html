@@ -94,6 +94,14 @@ table.roster td.nm{font-size:16px;font-weight:700;white-space:nowrap}table.roste
 details summary{cursor:pointer;margin-top:10px}
 @media(max-width:860px){.membergrid{grid-template-columns:1fr}}
 #memberUpcoming .item.st-overdue{background:#fff3f1}#memberUpcoming .item.st-overdue .due{color:var(--warn)}#memberUpcoming .item.st-overdue .due::after{content:'期限切れ';display:block;font-size:10px;font-weight:700}
+
+.lastcsv{font-size:12px;color:var(--muted);margin-right:6px;align-self:center}.lastcsv.warn{color:var(--warn);font-weight:700}
+.plangrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.plangrid .panel{margin:0}
+.plancard{border-top:5px solid var(--c)}.pc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.pc-head b{font-size:18px;color:var(--c)}.pc-head span{color:var(--muted);font-weight:700}
+.plancard h4{margin:12px 0 4px;font-size:13px;color:var(--muted)}.plancard ul.plain{line-height:1.75}
+.tracked{display:inline-block;font-size:10px;font-weight:700;background:#eef3fb;color:#2f5aa0;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
+.excl{color:#8a5a00;background:#fff8e6;border-radius:8px;padding:6px 8px;margin-top:10px}.pc-tenure{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px}
+.perkplan{margin-bottom:10px}.perkrow{display:flex;gap:10px;align-items:center;margin:4px 0}.perkrow input[name=perkname]{flex:1}
 </style>
 </head>
 <body>
@@ -149,6 +157,16 @@ const PLAN_DEFS = [
   ['toriko', '虜プラン', 500], ['keiai', '敬愛プラン', 3000], ['suuhai', '崇拝プラン', 5000],
   ['ketsuniku', '血肉プラン', 10000], ['kyoai', '狂愛プラン', 30000],
 ];
+function defaultPlanPerks() {
+  return {
+    toriko: [{ name: '最新情報＆ブログ' }, { name: 'FCサーバー招待（Discord）', rule: 'discord' }, { name: '特典ルーレット（豪華特典）' }, { name: 'ネップリ' }, { name: 'FC限定ショップ' }],
+    keiai: [{ name: 'くれあの日常（日常ボイス・らくがき・好き語り）' }, { name: 'リスナーゲーム通話交流会（不定期・ミュートOK）' }, { name: '限定配信（不定期）' }, { name: 'プチ漫画（不定期）' }],
+    suuhai: [{ name: '季節ごとシチュエーションボイス' }, { name: 'FC限定グッズ300円引き' }],
+    ketsuniku: [{ name: '10分通話 or 名前呼びシチュボ（3か月に1回）', rule: 'call-ketsuniku', noInherit: true }, { name: '鍵垢Xの公開', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
+    kyoai: [{ name: '1時間通話券（1か月に1回）', rule: 'call-kyoai' }],
+  };
+}
+
 function defaultSettings() {
   const plans = PLAN_DEFS.map(([id, name, price], order) => ({ id, name, price, order }));
   const all = plans.map(p => p.id);
@@ -164,6 +182,7 @@ function defaultSettings() {
       { id: 'tenure-12', kind: 'tenure', planIds: all, months: 12, label: '12か月継続特典',
         labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' } },
     ],
+    planPerks: defaultPlanPerks(),
     updatedAt: '1970-01-01T00:00:00.000Z',
   };
 }
@@ -476,6 +495,14 @@ function addExtra(data, fanIds, { title, due }, ctx) {
     data.records[id] = { id, key: `extra|${fanId}|${id}`, fanId, type: 'extra', title, due, device: ctx.device, updatedAt: ctx.now, deleted: false };
   }
   return data;
+}
+
+const addCsvLog = (data, counts, ctx) =>
+  addRecord(data, { key: 'csvlog', type: 'csvlog', at: ctx.now, counts }, ctx);
+
+function latestCsvLog(data) {
+  const logs = Object.values(data.records).filter(r => r.type === 'csvlog' && !r.deleted).sort((a, b) => (a.at < b.at ? 1 : -1));
+  return logs[0] || null;
 }
 
 // ---- merge.js
@@ -894,6 +921,25 @@ function sortFanRows(rows, key, dir) {
   });
 }
 
+// ---- plan-perks.js
+
+// そのプランが受けられる特典：自分のプランの特典＋下位プランの特典（上位に引き継がないものは除く）
+function perksForPlan(settings, planId) {
+  const all = settings.planPerks || defaultPlanPerks();
+  const plans = [...settings.plans].sort((a, b) => a.order - b.order);
+  const me = plans.find(p => p.id === planId);
+  if (!me) return { own: [], inherited: [], excluded: [], tenure: '' };
+  const inherited = [], excluded = [];
+  for (const p of plans.filter(p => p.order < me.order).sort((a, b) => b.order - a.order)) {
+    const list = all[p.id] || [];
+    excluded.push(...list.filter(x => x.noInherit));
+    const perks = list.filter(x => !x.noInherit);
+    if (perks.length) inherited.push({ planId: p.id, perks });
+  }
+  const tenureRule = settings.rules.find(r => r.kind === 'tenure' && r.months === 12);
+  return { own: all[planId] || [], inherited, excluded, tenure: tenureRule ? ((tenureRule.labelByPlan || {})[planId] || tenureRule.label) : '' };
+}
+
 // ---- ui.js
 
 const PLAN_COLORS = { toriko: '#c99a2e', keiai: '#d4588f', suuhai: '#4f7fb8', ketsuniku: '#b8283f', kyoai: '#7e4cc4' };
@@ -1022,7 +1068,7 @@ function showRecentSaveBanner() {
 }
 
 // ---------- main render ----------
-const PAGES = [['dashboard', '🏠', 'ダッシュボード'], ['perks', '🎁', '継続特典'], ['members', '👥', '会員名簿'], ['records', '📒', '渡した記録'], ['revenue', '💴', '収益'], ['settings', '⚙', '設定']];
+const PAGES = [['dashboard', '🏠', 'ダッシュボード'], ['perks', '🎁', '継続特典'], ['members', '👥', '会員名簿'], ['plans', '📋', 'プラン特典'], ['records', '📒', '渡した記録'], ['revenue', '💴', '収益'], ['settings', '⚙', '設定']];
 
 function render() {
   today = todayLocal();
@@ -1039,7 +1085,7 @@ function render() {
       </aside>
       <section class="mainarea">
         <header class="pagehead"><h1>${title}</h1>
-          <div class="actions"><button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button></div></header>
+          <div class="actions">${csvBadge()}<button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button></div></header>
         <div id="banner"></div>
         <div id="page">${renderPage(list)}</div>
       </section>
@@ -1047,7 +1093,33 @@ function render() {
   wire(list);
 }
 
+function csvBadge() {
+  const last = latestCsvLog(data);
+  if (!last) return '<span class="lastcsv warn">CSV未取込</span>';
+  const day = last.at.slice(0, 10) && new Date(last.at);
+  const local = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+  const ago = Math.round((Date.parse(today) - Date.parse(local)) / 86400000);
+  return `<span class="lastcsv ${ago > 35 ? 'warn' : ''}" title="${h(last.device)}で取込">最終取込 ${md(local)}（${ago === 0 ? '今日' : ago + '日前'}）</span>`;
+}
+
+function renderPlans() {
+  const plans = [...data.settings.plans].sort((a, b) => b.order - a.order);
+  const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">管理中</span>' : ''}</li>`;
+  return `<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「管理中」の特典は、渡すものリストで期限を管理しています。</p>
+    <div class="plangrid">${plans.map(p => {
+      const x = perksForPlan(data.settings, p.id);
+      const pn = id => h((planById(data.settings, id) || {}).name || id);
+      return `<section class="panel plancard" id="plan-${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">
+        <div class="pc-head"><b>${h(p.name)}</b><span>${yen(p.price)}/月</span></div>
+        <h4>★ ${h(p.name.replace(/プラン$/, ''))}の特典</h4><ul class="plain">${x.own.map(perk).join('') || '<li class="muted">なし</li>'}</ul>
+        ${x.inherited.map(g => `<h4>▼ ${pn(g.planId)}から</h4><ul class="plain">${g.perks.map(perk).join('')}</ul>`).join('')}
+        ${x.excluded.length ? `<p class="small excl">対象外：${x.excluded.map(e => h(e.name)).join('、')}</p>` : ''}
+        <div class="pc-tenure">🎁 12か月継続特典：<b>${h(x.tenure)}</b></div></section>`;
+    }).join('')}</div>`;
+}
+
 function renderPage(list) {
+  if (page === 'plans') return renderPlans();
   if (page === 'perks') return `<section id="list" class="panel">${renderList(list)}</section>${renderNotices(list.notices)}`;
   if (page === 'members') return `<section class="panel"><div id="tabContent">${renderFans()}</div></section>`;
   if (page === 'records') return `<section class="panel"><div id="tabContent">${renderRecords()}</div></section>`;
@@ -1345,6 +1417,7 @@ function renderMember() {
         <section class="panel"><h2>📝 メモ</h2>
           <textarea id="memo" rows="7" placeholder="好きなもの、配送の注意、話した内容など">${h(f.memo || '')}</textarea>
           <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="muted small" id="memoState"></span><button class="btn small primary" id="saveMemo">保存</button></div></section>
+        <section class="panel"><h2>📋 受けられる特典</h2>${(() => { const x = perksForPlan(data.settings, plan); const names = [...x.own, ...x.inherited.flatMap(g => g.perks)].map(p => h(p.name)); return `<ul class="plain small">${names.map(n => `<li>${n}</li>`).join('')}</ul><p class="small">🎁 12か月継続：<b>${h(x.tenure)}</b></p><button class="link small" data-goto="plans">プラン特典の一覧へ →</button>`; })()}</section>
         <section class="panel"><h2>📈 プランの変遷</h2><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
           <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></section>
       </div>
@@ -1404,7 +1477,7 @@ function previewCsv(text) {
     ${summary.planChanged.length ? `<p class="small">プラン変更：${names(summary.planChanged)}</p>` : ''}
     ${skipped.length ? `<div class="notice small">読み飛ばした行：<br>${skipped.map(h).join('<br>')}</div>` : ''}
     <p class="muted small">取り込む前の状態はバックアップされます（直近5回分）。</p></div>`,
-    { ok: '取り込む', onOk: async () => { await storage.backup(data, 'csv'); return commit(next); } });
+    { ok: '取り込む', onOk: async () => { await storage.backup(data, 'csv'); return commit(addCsvLog(next, { rows: parsed.rows.length, added: summary.added.length, leftCandidates: summary.leftCandidates.length, rejoined: summary.rejoined.length, planChanged: summary.planChanged.length, skipped: skipped.length }, ctx())); } });
 }
 const fanNameIn = d => id => (d.fans[id] ? d.fans[id].name : id);
 
@@ -1432,6 +1505,13 @@ function renderSettings() {
       <button class="btn primary" id="saveSettings">保存</button></section>
     <section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
       <table><tbody>${rules}</tbody></table></section>
+    <section class="panel"><div class="secthead"><h2>プラン特典の中身</h2><button type="button" class="btn small primary" id="savePerks">保存</button></div>
+      <p class="muted small">「上位にも」のチェックを外すと、上のプランには引き継がれません（例：血肉の10分通話）。</p>
+      ${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => `<div class="perkplan" data-plan="${p.id}"><h4>${badge(p.id)} ${h(p.name)}</h4>
+        ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? '<span class="tracked">管理中</span>' : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
+        <button type="button" class="link small addperk">＋特典を追加</button></div>`).join('')}</section>
+    <section class="panel"><h2>CSV取込の履歴</h2>${(() => { const logs = Object.values(data.records).filter(r => r.type === 'csvlog' && !r.deleted).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 20);
+      return logs.length ? `<table><thead><tr><th>日時</th><th>PC</th><th class="r">行数</th><th class="r">新規</th><th class="r">退会候補</th><th class="r">再入会</th><th class="r">プラン変更</th></tr></thead><tbody>${logs.map(l => { const d = new Date(l.at); return `<tr class="csvlog"><td>${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</td><td>${h(l.device)}</td><td class="r">${l.counts.rows}</td><td class="r">${l.counts.added}</td><td class="r">${l.counts.leftCandidates}</td><td class="r">${l.counts.rejoined || 0}</td><td class="r">${l.counts.planChanged || 0}</td></tr>`; }).join('')}</tbody></table>` : '<p class="muted">まだ取り込んでいません</p>'; })()}</section>
     <section class="panel"><h2>もう1台のアカウントと共有</h2>
       ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
       <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : '<p class="muted small">このモードでは共有できません</p>'}
@@ -1456,6 +1536,27 @@ function wireSettings() {
     const email = d.querySelector('#shareEmail').value.trim();
     if (!/^[^@\s]+@[^@\s]+$/.test(email)) return alert('メールアドレスを入れてください');
     try { await storage.shareWith(email); alert(email + ' に共有しました（Googleから案内メールが届きます）'); } catch (e) { alert(e.message); }
+  };
+  d.querySelectorAll('.addperk').forEach(b => b.onclick = () => {
+    const row = document.createElement('div'); row.className = 'perkrow'; row.dataset.i = 'new';
+    row.innerHTML = '<input name="perkname" placeholder="特典の名前"><label class="inline"><input type="checkbox" name="inherit" checked> 上位にも</label><button type="button" class="link small delperk">削除</button>';
+    b.before(row); row.querySelector('.delperk').onclick = () => row.remove(); row.querySelector('input').focus();
+  });
+  d.querySelectorAll('.delperk').forEach(b => b.onclick = () => b.closest('.perkrow').remove());
+  d.querySelector('#savePerks').onclick = () => {
+    const cur = data.settings.planPerks || defaultPlanPerks();
+    const next = {};
+    d.querySelectorAll('.perkplan').forEach(pp => {
+      const pid = pp.dataset.plan;
+      next[pid] = [...pp.querySelectorAll('.perkrow')].map(r => {
+        const old = r.dataset.i === 'new' ? {} : ((cur[pid] || [])[Number(r.dataset.i)] || {});
+        const name = r.querySelector('[name=perkname]').value.trim();
+        const item = { ...old, name };
+        if (r.querySelector('[name=inherit]').checked) delete item.noInherit; else item.noInherit = true;
+        return item;
+      }).filter(x => x.name);
+    });
+    commit(withSettings(s => { s.planPerks = next; }));
   };
   d.querySelector('#addRule').onclick = () => openRuleEditor(null, { kind: 'tenure', months: 24 });
   d.querySelectorAll('.editrule').forEach(b => b.onclick = () => openRuleEditor(b.dataset.id));
