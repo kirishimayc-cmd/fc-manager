@@ -104,6 +104,33 @@ details summary{cursor:pointer;margin-top:10px}
 .perkplan{margin-bottom:10px}.perkrow{display:flex;gap:10px;align-items:center;margin:4px 0}.perkrow input[name=perkname]{flex:1}
 .namelink{color:var(--ink);text-decoration:none;font-weight:600}.namelink:hover{color:var(--wine);text-decoration:underline}
 .planrow{margin:2px 0 6px;justify-content:flex-end}
+
+/* ---- one-click rows ---- */
+.item{grid-template-columns:34px 92px minmax(130px,180px) 1fr 34px !important}
+#dashUrgent .item{grid-template-columns:34px 92px minmax(120px,170px) 1fr 34px !important}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid #cdbfc7;background:#fff;cursor:pointer;position:relative}
+.check:hover{border-color:#7e4cc4;background:#f3ecfc}.check:hover::after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#7e4cc4;font-weight:800}
+.more{width:30px;height:30px;border:0;background:none;border-radius:8px;cursor:pointer;font-size:18px;color:var(--muted)}.more:hover{background:#f1ecef}
+.menu{display:flex;flex-direction:column;gap:6px}.menuitem{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 14px;font:inherit;cursor:pointer}.menuitem:hover{border-color:var(--wine);background:var(--wine-soft)}
+.sortsel{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:500;margin:0 8px 0 0}.sortsel select{padding:3px 6px;font-size:12px;width:auto;display:inline;margin:0}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:50}
+.toast{display:flex;align-items:center;gap:14px;background:#2b1d24;color:#fff;padding:11px 16px;border-radius:12px;box-shadow:0 8px 30px #0004;font-size:14px}
+.toast .undo{background:none;border:1px solid #fff6;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit;font-size:13px}
+/* ---- perk grid (統一色：紫=済 赤=期限切れ 白=今 灰=先) ---- */
+.grid-row{padding:10px 0;border-bottom:1px solid #f3eff2}.gr-title{font-weight:700;margin-bottom:8px;display:flex;align-items:center}
+.cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border-radius:10px;padding:8px 10px;border:1px solid;cursor:pointer;font:inherit;text-align:left;min-height:56px}
+.cell .cl{font-size:11px;color:var(--muted);font-weight:600}.cell .cs{font-size:13px;font-weight:700}
+.cell.st-done{background:#efe6fb;border-color:#d8c4f3;color:#6b3fb0}.cell.st-done .cl{color:#8f6cc4}
+.cell.st-overdue{background:#fdecea;border-color:#f3b4ab;color:#a8231a}
+.cell.st-current{background:#fff;border:2px solid var(--wine);color:var(--wine)}
+.cell.st-future{background:#f6f4f5;border-color:#ebe6e9;color:#aaa;cursor:default}
+.cell.st-carried,.cell.st-dismissed{background:#f6f4f5;border-color:#e0dadd;color:#888}
+.cell:hover{filter:brightness(.97)}
+.legend{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}.legend .lg{display:inline-block;width:12px;height:12px;border-radius:4px;border:1px solid}
+.lg.st-done{background:#efe6fb;border-color:#d8c4f3}.lg.st-overdue{background:#fdecea;border-color:#f3b4ab}.lg.st-current{background:#fff;border-color:var(--wine)}.lg.st-future{background:#f6f4f5;border-color:#ebe6e9}
+.membergrid{grid-template-columns:1.8fr 1fr !important}
+.older{margin-bottom:8px}.older summary{font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:6px}.older .cells{margin-bottom:6px}b.red{color:var(--warn)}
 </style>
 </head>
 <body>
@@ -472,6 +499,67 @@ const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 function invalidDateFans(data) {
   const ok = d => d === null || ISO_DAY.test(d);
   return Object.values(data.fans).filter(f => !f.periods.every(p => ISO_DAY.test(p.start) && ok(p.end)) || !f.planHistory.every(h => ISO_DAY.test(h.start) && ok(h.end))).map(f => f.memberNo);
+}
+
+// 個人ページのマス目：その人が対象になった特典を、期間ごとにすべて並べる
+const GRID_ORDER = ['interval', 'tenure', 'birthday', 'join', 'extra'];
+function fanPerkGrid(data, fanId, today) {
+  const fan = data.fans[fanId];
+  if (!fan) return [];
+  const recs = live(data).filter(r => r.fanId === fanId);
+  const settledBy = new Map();   // key -> [{id, date, type}]
+  const add = (k, r) => { if (!settledBy.has(k)) settledBy.set(k, []); settledBy.get(k).push(r); };
+  for (const r of recs) {
+    if (r.type === 'delivered' || r.type === 'dismissed' || r.type === 'migrated') add(r.key, r);
+    if (r.type === 'delivered') (r.coversKeys || []).forEach(k => add(k, r));
+  }
+  const carries = new Map(recs.filter(r => r.type === 'carry').map(r => [r.key, r]));
+  const schedules = new Map();
+  for (const r of recs.filter(r => r.type === 'schedule')) { const p = schedules.get(r.key); if (!p || p.updatedAt < r.updatedAt) schedules.set(r.key, r); }
+  const limit = endOfMonth(addMonths(today, 1));
+  const items = generate(data, today).filter(i => i.fanId === fanId);
+  const extras = recs.filter(r => r.type === 'extra').map(r => ({ key: r.key, ruleId: 'extra', kind: 'extra', title: r.title, due: r.due, fanId }));
+  const rows = new Map();
+  for (const i of [...items, ...extras]) {
+    const rowKey = i.kind === 'tenure' ? 'tenure' : i.ruleId;
+    if (!rows.has(rowKey)) {
+      const rule = data.settings.rules.find(r => r.id === i.ruleId);
+      rows.set(rowKey, { ruleId: i.kind === 'tenure' ? 'tenure' : i.ruleId, kind: i.kind, title: i.kind === 'extra' ? '個別の特典' : i.kind === 'tenure' ? '継続特典' : rule.label, months: rule && rule.months, icon: rule && rule.icon, cells: [] });
+    }
+    rows.get(rowKey).cells.push(i);
+  }
+  const out = [];
+  for (const row of rows.values()) {
+    let cells = row.cells.sort((a, b) => (row.kind === 'tenure' ? Number(a.key.split('|')[2]) - Number(b.key.split('|')[2]) : compare(a.periodStart || a.due, b.periodStart || b.due)));
+    if (row.kind === 'interval') {
+      const firstFuture = cells.findIndex(c => compare(c.periodStart, today) > 0);
+      if (firstFuture >= 0) cells = cells.slice(0, firstFuture + 1);
+    }
+    const counts = {};
+    row.cells = cells.map(c => {
+      const s = schedules.get(c.key);
+      const due = s && s.scheduledDate ? s.scheduledDate : c.due;
+      const by = settledBy.get(c.key) || [];
+      const label = row.kind === 'interval' ? (row.months === 1 ? c.periodStart.slice(0, 7) : c.periodStart.slice(0, 7) + '〜')
+        : row.kind === 'tenure' ? c.key.split('|')[2] + 'か月' : row.kind === 'birthday' ? c.key.split('|')[2]
+        : row.kind === 'extra' ? c.title : c.title;
+      let state;
+      if (by.some(r => r.type !== 'dismissed')) state = 'done';
+      else if (by.length) state = 'dismissed';
+      else if (carries.has(c.key)) state = 'carried';
+      else if (compare(due, today) < 0) state = 'overdue';
+      else if (row.kind === 'interval' ? compare(c.periodStart, today) <= 0 : compare(due, limit) <= 0) state = 'current';
+      else state = 'future';
+      const count = 1 + (counts[c.key] || 0);
+      const carry = carries.get(c.key);
+      if (carry && carry.carryTo) counts[carry.carryTo] = count;
+      const doneRec = by.find(r => r.type === 'delivered') || by[0];
+      return { key: c.key, label, due, periodStart: c.periodStart || null, state, count, scheduled: !!(s && s.scheduledDate),
+        recordIds: by.map(r => r.id), doneDate: doneRec ? doneRec.date || null : null, title: c.title };
+    });
+    out.push(row);
+  }
+  return out.sort((a, b) => GRID_ORDER.indexOf(a.kind) - GRID_ORDER.indexOf(b.kind));
 }
 
 // ---- records.js
@@ -995,6 +1083,42 @@ async function commit(next) {
   render();
 }
 
+// ---------- toast / one-click ----------
+let toastTimer = null;
+function toast(msg, undo) {
+  let el = $('#toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="toast"><span>${msg}</span>${undo ? '<button class="undo">元に戻す</button>' : ''}</div>`;
+  if (undo) el.querySelector('.undo').onclick = () => { el.innerHTML = ''; undo(); };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.innerHTML = ''; }, 6000);
+}
+async function deliverNow(it) {
+  const before = new Set(Object.keys(data.records));
+  const next = deliver(data, it, { date: today, memo: '' }, ctx());
+  const newId = Object.keys(next.records).find(k => !before.has(k));
+  await commit(next);
+  toast(`${h(fanName(it.fanId))}さん：${h(it.title)} を渡した記録にしました`, () => commit(removeRecord(data, newId, ctx())));
+}
+async function undoCell(cell, item) {
+  let next = data;
+  for (const id of cell.recordIds) next = removeRecord(next, id, ctx());
+  await commit(next);
+  toast(`${h(cell.title || cell.label)} を未渡しに戻しました`, () => deliverNow(item));
+}
+function itemMenu(it) {
+  const acts = [['detail', '日付・メモを入れて記録する'], ...(it.kind === 'interval' ? [['sched', '予定日を決める'], ['carry', '次の回に回す']] : []), ...(it.fanLeft ? [['dismiss', '対象外にする']] : []), ...(it.kind === 'extra' ? [['cancel', 'この特典を取り消す']] : [])];
+  const d = openDialog(`${fanName(it.fanId)}さん：${it.title}`, `<div class="menu">${acts.map(([k, l]) => `<button type="button" class="menuitem" data-act="${k}">${l}</button>`).join('')}</div>`);
+  d.querySelectorAll('.menuitem').forEach(b => b.onclick = () => {
+    d.close();
+    const a = b.dataset.act;
+    if (a === 'detail') openDeliver(it);
+    if (a === 'sched') openSchedule(it);
+    if (a === 'carry') openCarry(it);
+    if (a === 'dismiss') openDialog('対象外にする', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」をリストから外します。</p><label>メモ<input name="memo" placeholder="例：退会のため"></label>`, { ok: '対象外にする', onOk: dl => commit(dismiss(data, it, dl.querySelector('[name=memo]').value, ctx())) });
+    if (a === 'cancel') openDialog('特典を取り消す', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」を取り消します。</p>`, { ok: '取り消す', danger: true, onOk: () => commit(removeRecord(data, it.extraId, ctx())) });
+  });
+}
+
 // ---------- dialog ----------
 function openDialog(title, body, { ok = 'OK', danger = false, onOk, wide = false } = {}) {
   const d = $('#dlg');
@@ -1094,7 +1218,7 @@ function showRecentSaveBanner() {
 }
 
 // ---------- main render ----------
-const PAGES = [['dashboard', '🏠', 'ダッシュボード'], ['perks', '🎁', '継続特典'], ['members', '👥', '会員名簿'], ['plans', '📋', 'プラン特典'], ['records', '📒', '渡した記録'], ['revenue', '💴', '収益'], ['settings', '⚙', '設定']];
+const PAGES = [['dashboard', '🏠', 'ダッシュボード'], ['perks', '✅', '渡すもの'], ['members', '👥', '会員名簿'], ['plans', '📋', 'プラン特典'], ['records', '📒', '記録'], ['revenue', '💴', '収益'], ['settings', '⚙', '設定']];
 
 function render() {
   today = todayLocal();
@@ -1193,9 +1317,8 @@ function renderDashboard(list) {
 
 function renderList(list) {
   const head = `<div class="listhead"><h2>渡すものリスト</h2>${list.items.length ? `<div class="controls">
-    <span class="ctl-label">並べ替え</span>${[['due', '期限順'], ['name', '名前順'], ['kind', '種類順']].map(([k, l]) => `<button class="sortbtn ${listSort === k ? 'on' : ''}" data-sort="${k}">${l}</button>`).join('')}
-    <span class="ctl-label">絞り込み</span><button class="kindchip ${listKind === 'all' ? 'on' : ''}" data-kind="all">すべて ${list.items.length}</button>${Object.entries(KIND_META).map(([k, m]) => { const n = list.items.filter(i => i.kind === k).length; return n ? `<button class="kindchip ${listKind === k ? 'on' : ''}" data-kind="${k}" style="--k:${m.color}">${m.icon}${m.label} ${n}</button>` : ''; }).join('')}
-  </div>` : ''}</div>${list.items.length ? `<div class="controls planrow"><span class="ctl-label">プラン</span><button class="planchip ${listPlan === 'all' ? 'on' : ''}" data-plan="all">すべて</button>${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => { const n = list.items.filter(i => itemPlan(i) === p.id).length; return n ? `<button class="planchip ${listPlan === p.id ? 'on' : ''}" data-plan="${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">${h(p.name.replace(/プラン$/, ''))} ${n}</button>` : ''; }).join('')}</div>` : ''}`;
+    <span class="ctl-label">種類</span><button class="kindchip ${listKind === 'all' ? 'on' : ''}" data-kind="all">すべて ${list.items.length}</button>${Object.entries(KIND_META).map(([k, m]) => { const n = list.items.filter(i => i.kind === k).length; return n ? `<button class="kindchip ${listKind === k ? 'on' : ''}" data-kind="${k}" style="--k:${m.color}">${m.icon}${m.label} ${n}</button>` : ''; }).join('')}
+  </div>` : ''}</div>${list.items.length ? `<div class="controls planrow"><label class="sortsel">並べ替え <select id="listSort">${[['due', '期限順'], ['name', '名前順'], ['kind', '種類順']].map(([k, l]) => `<option value="${k}" ${listSort === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label><span class="ctl-label">プラン</span><button class="planchip ${listPlan === 'all' ? 'on' : ''}" data-plan="all">すべて</button>${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => { const n = list.items.filter(i => itemPlan(i) === p.id).length; return n ? `<button class="planchip ${listPlan === p.id ? 'on' : ''}" data-plan="${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">${h(p.name.replace(/プラン$/, ''))} ${n}</button>` : ''; }).join('')}</div>` : ''}`;
   if (!list.items.length) return head + `<div class="empty">今月・来月に渡すものはありません 🎉</div>`;
   const shown = sortItems(filterItems(list.items, listKind).filter(i => listPlan === 'all' || itemPlan(i) === listPlan), listSort, fanName);
   return head + GROUPS.map(([st, label]) => {
@@ -1216,15 +1339,12 @@ function itemRow(i) {
   const rule0 = data.settings.rules.find(r => r.id === i.ruleId);
   const meta = { ...(KIND_META[i.kind] || { icon: '・', label: '', color: '#777' }), ...(rule0 && rule0.icon ? { icon: rule0.icon } : {}) };
   const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
-  const btns = [`<button class="btn primary deliver">渡した</button>`,
-    i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
-    i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : '',
-    i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
   return `<div class="item st-${h(i.status)}" data-key="${h(i.key)}" data-kind="${h(i.kind)}" data-plan="${h(plan || '')}">
+    <button class="check" title="渡した（押すだけで記録）" aria-label="渡した"></button>
     <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
     <div class="who"><button class="link fanlink namelink" data-id="${h(i.fanId)}">${h(f.name || i.fanId)}</button> ${badge(plan)}</div>
     <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
-    <div class="btns">${btns}</div></div>`;
+    <button class="more" title="ほかの操作">…</button></div>`;
 }
 
 function renderNotices(n) {
@@ -1328,20 +1448,16 @@ function wire(list) {
   $('#extraBtn').onclick = openExtra;
   document.querySelectorAll('.nav').forEach(b => b.onclick = () => { page = b.dataset.page; render(); window.scrollTo(0, 0); });
   document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
-  document.querySelectorAll('.sortbtn').forEach(b => b.onclick = () => { listSort = b.dataset.sort; render(); });
+  const ls = $('#listSort'); if (ls) ls.onchange = () => { listSort = ls.value; render(); };
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
   document.querySelectorAll('#list .planchip').forEach(b => b.onclick = () => { listPlan = b.dataset.plan; render(); });
   const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items : [];
   const byKey = Object.fromEntries([...list.items, ...extraItems].map(i => [i.key, i]));
   document.querySelectorAll('#page .item').forEach(row => {
     const it = byKey[row.dataset.key];
-    row.querySelector('.deliver').onclick = () => openDeliver(it);
-    const s = row.querySelector('.sched'); if (s) s.onclick = () => openSchedule(it);
-    const c = row.querySelector('.carry'); if (c) c.onclick = () => openCarry(it);
-    const x = row.querySelector('.cancelExtra');
-    if (x) x.onclick = () => openDialog('特典を取り消す', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」を取り消します。</p>`, { ok: '取り消す', danger: true, onOk: () => commit(removeRecord(data, it.extraId, ctx())) });
-    const d = row.querySelector('.dismiss'); if (d) d.onclick = () => openDialog('対象外にする', `<p>${h(fanName(it.fanId))}さんの「${h(it.title)}」をリストから外します。</p><label>メモ<input name="memo" placeholder="例：退会のため"></label>`,
-      { ok: '対象外にする', onOk: dl => commit(dismiss(data, it, dl.querySelector('[name=memo]').value, ctx())) });
+    if (!it) return;
+    row.querySelector('.check').onclick = () => deliverNow(it);
+    row.querySelector('.more').onclick = () => itemMenu(it);
   });
   for (const u of list.notices.undecidedMilestones) { const b = $('#decide' + u.months); if (b) b.onclick = () => openRuleEditor(null, { kind: 'tenure', months: u.months }); }
   if (page === 'settings') wireSettings();
@@ -1413,15 +1529,7 @@ function renderMember() {
   const f = data.fans[memberId];
   if (!f) return '<div class="empty">この会員は見つかりません</div>';
   const plan = planOn(f, today) || f.planHistory.at(-1).planId;
-  const up = computeList(data, today, { fanId: f.memberNo, untilMonths: 12 }).items;
-  // 毎月・3か月ごとの通話券は、先の分を1件だけ見せて残りはまとめる
-  const seenRule = {}, folded = {};
-  const upSorted = sortItems(up, 'due', fanName).filter(i => {
-    if (i.kind !== 'interval' || i.status !== 'later') return true;
-    if (!seenRule[i.ruleId]) { seenRule[i.ruleId] = true; return true; }
-    folded[i.title] = (folded[i.title] || 0) + 1; return false;
-  });
-  const foldNote = Object.entries(folded).map(([t, n]) => `<p class="muted small more">${h(t)}：ほか${n}回（1年先まで）</p>`).join('');
+  const grid = fanPerkGrid(data, f.memberNo, today);
   const recs = Object.values(data.records).filter(r => r.fanId === f.memberNo && !r.deleted && (r.type === 'delivered' || r.type === 'dismissed'))
     .sort((a, b) => compare(b.date || b.updatedAt, a.date || a.updatedAt));
   const migrated = Object.values(data.records).filter(r => r.fanId === f.memberNo && !r.deleted && r.type === 'migrated');
@@ -1436,11 +1544,24 @@ function renderMember() {
     </section>
     <div class="membergrid">
       <div class="mcol">
-        <section class="panel"><h2>🎁 今後の特典</h2><p class="muted small">期限切れと、これから1年分</p>
-          <div id="memberUpcoming">${upSorted.length ? upSorted.map(itemRow).join('') + foldNote : '<div class="empty">今後1年の特典はありません</div>'}</div></section>
-        <section class="panel"><h2>✅ 渡し済みの特典</h2>${recs.length ? `<table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
-            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
-            <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">まだありません</p>'}
+        <section class="panel"><div class="secthead"><h2>🎁 特典の記録</h2><span class="legend"><i class="lg st-done"></i>済 <i class="lg st-overdue"></i>期限切れ <i class="lg st-current"></i>今 <i class="lg st-future"></i>先</span></div>
+          <p class="muted small">マスを押すと「渡した」になります（もう一度押すと取り消し）。右クリックで予定日・次に回す・日付やメモの記録。</p>
+          <div id="perkGrid">${grid.length ? grid.map(row => {
+            const meta = KIND_META[row.kind] || {};
+            return `<div class="grid-row"><div class="gr-title"><span class="kindtag" style="--k:${meta.color}">${row.icon || meta.icon}</span>${h(row.title)}</div>
+              ${(() => {
+                const cellHtml = c => `<button class="cell st-${c.state}" data-key="${h(c.key)}" title="${h(c.title || '')} ${c.state === 'done' && c.doneDate ? '（' + ymd(c.doneDate) + '）' : '期限 ' + ymd(c.due)}">
+                <span class="cl">${h(c.label)}</span><span class="cs">${c.state === 'done' ? '✓ ' + (c.doneDate ? md(c.doneDate) : '済') : c.state === 'carried' ? '→ 次へ' : c.state === 'dismissed' ? '対象外' : c.state === 'overdue' ? '期限切れ' : c.state === 'current' ? (c.count > 1 ? c.count + '回分' : '未') : '・'}${c.scheduled && c.state !== 'done' ? ' 予定' + md(c.due) : ''}</span></button>`;
+                const KEEP = 6;
+                if (row.cells.length <= KEEP + 2) return `<div class="cells">${row.cells.map(cellHtml).join('')}</div>`;
+                const old = row.cells.slice(0, row.cells.length - KEEP), recent = row.cells.slice(-KEEP);
+                const doneN = old.filter(c => c.state === 'done').length, badN = old.filter(c => c.state === 'overdue').length;
+                return `<details class="older"${badN ? ' open' : ''}><summary>それ以前 ${old.length}回（済 ${doneN}${badN ? `・<b class="red">期限切れ ${badN}</b>` : ''}）</summary><div class="cells">${old.map(cellHtml).join('')}</div></details><div class="cells">${recent.map(cellHtml).join('')}</div>`;
+              })()}</div>`;
+          }).join('') : '<div class="empty">対象の特典はありません</div>'}</div>
+          ${recs.length ? `<details><summary class="small muted">記録の一覧（日付・メモの修正）${recs.length}件</summary><table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
+            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
+            <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></details>` : ''}
           ${migrated.length ? `<details><summary class="small muted">v4から引継ぎ（渡し済み扱い）${migrated.length}件</summary><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul></details>` : ''}</section>
       </div>
       <div class="mcol">
@@ -1479,6 +1600,15 @@ function wireMember() {
     commit(touchFan(next, memberId));
   };
   document.querySelectorAll('#page .unmig').forEach(b => b.onclick = () => commit(removeRecord(data, b.dataset.id, ctx())));
+  const grid = fanPerkGrid(data, memberId, today);
+  const cells = Object.fromEntries(grid.flatMap(r => r.cells.map(c => [c.key, { ...c, ruleId: r.ruleId, kind: r.kind }])));
+  const asItem = c => computeList(data, today, { fanId: memberId, untilMonths: 24 }).items.find(i => i.key === c.key)
+    || { key: c.key, fanId: memberId, ruleId: c.ruleId, kind: c.kind, title: c.title || c.label, due: c.due, coversKeys: [], count: 1, extraId: c.key.split('|')[2] };
+  document.querySelectorAll('#perkGrid .cell').forEach(b => {
+    const c = cells[b.dataset.key];
+    b.onclick = () => (c.state === 'done' || c.state === 'dismissed' ? undoCell(c, asItem(c)) : c.state === 'carried' ? toast('この回は次の回に回してあります（右クリックで操作）') : deliverNow(asItem(c)));
+    b.oncontextmenu = e => { e.preventDefault(); itemMenu(asItem(c)); };
+  });
 }
 
 // ---------- files ----------
