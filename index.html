@@ -102,6 +102,7 @@ details summary{cursor:pointer;margin-top:10px}
 .tracked{display:inline-block;font-size:10px;font-weight:700;background:#eef3fb;color:#2f5aa0;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .excl{color:#8a5a00;background:#fff8e6;border-radius:8px;padding:6px 8px;margin-top:10px}.pc-tenure{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px}
 .perkplan{margin-bottom:10px}.perkrow{display:flex;gap:10px;align-items:center;margin:4px 0}.perkrow input[name=perkname]{flex:1}
+.namelink{color:var(--ink);text-decoration:none;font-weight:600}.namelink:hover{color:var(--wine);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1215,7 +1216,7 @@ function itemRow(i) {
     i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
   return `<div class="item st-${h(i.status)}" data-key="${h(i.key)}" data-kind="${h(i.kind)}">
     <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
-    <div class="who">${h(f.name || i.fanId)} ${badge(plan)}</div>
+    <div class="who"><button class="link fanlink namelink" data-id="${h(i.fanId)}">${h(f.name || i.fanId)}</button> ${badge(plan)}</div>
     <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
     <div class="btns">${btns}</div></div>`;
 }
@@ -1225,7 +1226,7 @@ function renderNotices(n) {
   const bad = invalidDateFans(data);
   if (bad.length) parts.push(`<div class="notice warn-strong">⚠ 日付が読めないファンが${bad.length}人います（${bad.slice(0, 5).map(fanName).map(h).join('、')}${bad.length > 5 ? ' ほか' : ''}）。この人たちの特典はリストに出ません。v4のデータをもう一度読み込んでください。</div>`);
   if (n.missingBirthday.length) parts.push(`<div class="notice">🎂 誕生日が未入力の人：${n.missingBirthday.map(id => `<button class="link fanlink" data-id="${h(id)}">${h(fanName(id))}</button>`).join('、')}</div>`);
-  for (const u of n.undecidedMilestones) parts.push(`<div class="notice">⭐ もうすぐ${u.months}か月の人がいます（${u.memberNos.map(fanName).map(h).join('、')}）。${u.months}か月の特典を決めますか？ <button class="link" id="decide${u.months}">特典を決める</button></div>`);
+  for (const u of n.undecidedMilestones) parts.push(`<div class="notice">⭐ もうすぐ${u.months}か月の人がいます（${u.memberNos.map(id => `<button class="link fanlink" data-id="${h(id)}">${h(fanName(id))}</button>`).join('、')}）。${u.months}か月の特典を決めますか？ <button class="link" id="decide${u.months}">特典を決める</button></div>`);
   return parts.length ? `<section id="notices">${parts.join('')}</section>` : '';
 }
 
@@ -1292,7 +1293,7 @@ function renderRecords() {
     .sort((a, b) => compare(b.date || b.updatedAt, a.date || a.updatedAt) || compare(b.updatedAt, a.updatedAt));
   if (!recs.length) return '<div class="empty">まだ記録はありません</div>';
   return `<div class="scroll"><table><thead><tr><th>渡した日</th><th>名前</th><th>内容</th><th>メモ</th><th>記録したPC</th><th></th></tr></thead><tbody>${recs.map(r => `
-    <tr class="record"><td>${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td><td>${h(fanName(r.fanId))}</td>
+    <tr class="record"><td>${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td><td><button class="link fanlink" data-id="${h(r.fanId)}">${h(fanName(r.fanId))}</button></td>
     <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}</td>
     <td>${h(r.memo)}</td><td class="muted">${h(r.device)}</td>
     <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></div>`;
@@ -1312,7 +1313,7 @@ function renderRevenue() {
   return `<div class="grid2"><div><h3>プラン別（在籍中）</h3><table><tbody>${byPlan.map(x => `<tr><td>${badge(x.p.id)}</td><td>${yen(x.p.price)}</td><td>${x.n}人</td><td class="r"><b>${yen(x.sum)}</b></td></tr>`).join('')}
     <tr class="total"><td colspan="3">月額合計</td><td class="r"><b>${yen(total)}</b></td></tr></tbody></table>
     <p class="muted small">支援額はプランの在籍月数（開始月を含む）× 月額で計算した目安です。</p></div>
-    <div><h3>ユーザー別 累計支援額</h3><div class="scroll short"><table><tbody>${fans.map(({ f, s }) => `<tr><td>${h(f.name)}</td><td>${STATUS_LABEL[f.status]}</td><td class="r">${yen(s)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+    <div><h3>ユーザー別 累計支援額</h3><div class="scroll short"><table><tbody>${fans.map(({ f, s }) => `<tr><td><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${STATUS_LABEL[f.status]}</td><td class="r">${yen(s)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
 }
 
 // ---------- wiring ----------
