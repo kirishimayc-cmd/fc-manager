@@ -162,7 +162,7 @@ function defaultPlanPerks() {
     toriko: [{ name: '最新情報＆ブログ' }, { name: 'FCサーバー招待（Discord）', rule: 'discord' }, { name: '特典ルーレット（豪華特典）' }, { name: 'ネップリ' }, { name: 'FC限定ショップ' }],
     keiai: [{ name: 'くれあの日常（日常ボイス・らくがき・好き語り）' }, { name: 'リスナーゲーム通話交流会（不定期・ミュートOK）' }, { name: '限定配信（不定期）' }, { name: 'プチ漫画（不定期）' }],
     suuhai: [{ name: '季節ごとシチュエーションボイス' }, { name: 'FC限定グッズ300円引き' }],
-    ketsuniku: [{ name: '10分通話 or 名前呼びシチュボ（3か月に1回）', rule: 'call-ketsuniku', noInherit: true }, { name: '鍵垢Xの公開', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
+    ketsuniku: [{ name: '10分通話 or 名前呼びシチュボ（3か月に1回）', rule: 'call-ketsuniku', inheritAs: { name: '名前呼びシチュボ（3か月に1回）', rule: 'situvo-kyoai' }, inheritNote: '血肉の「10分通話」は1時間通話券に含まれるため、名前呼びシチュボを自動で受け取ります' }, { name: '鍵垢Xの公開', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
     kyoai: [{ name: '1時間通話券（1か月に1回）', rule: 'call-kyoai' }],
   };
 }
@@ -178,11 +178,13 @@ function defaultSettings() {
       { id: 'kagiaka', kind: 'join', planIds: ['ketsuniku', 'kyoai'], label: '鍵垢X公開' },
       { id: 'call-ketsuniku', kind: 'interval', planIds: ['ketsuniku'], months: 3, label: '10分通話 or 名前呼びシチュボ', variants: ['通話', 'シチュボ'] },
       { id: 'call-kyoai', kind: 'interval', planIds: ['kyoai'], months: 1, label: '1時間通話券' },
+      { id: 'situvo-kyoai', kind: 'interval', planIds: ['kyoai'], months: 3, label: '名前呼びシチュボ（3か月に1回）', icon: '🎤' },
       { id: 'birthday', kind: 'birthday', planIds: ['ketsuniku', 'kyoai'], label: 'お誕生日ビデオレター' },
       { id: 'tenure-12', kind: 'tenure', planIds: all, months: 12, label: '12か月継続特典',
         labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' } },
     ],
     planPerks: defaultPlanPerks(),
+    rulesVersion: 2,
     updatedAt: '1970-01-01T00:00:00.000Z',
   };
 }
@@ -191,6 +193,26 @@ function emptyData() {
 }
 const planById = (s, id) => s.plans.find(p => p.id === id);
 const planByName = (s, name) => s.plans.find(p => p.name === String(name).trim());
+
+// 以前に保存された設定を新しい既定に合わせる（1回だけ）。ユーザーが消したルールは戻さない。
+function upgradeSettings(data, today, now) {
+  const st = data.settings || {};
+  if ((st.rulesVersion || 1) >= 2) return data;
+  const next = JSON.parse(JSON.stringify(data));
+  if (!next.settings.rules.some(r => r.id === 'situvo-kyoai')) {
+    const def = defaultSettings().rules.find(r => r.id === 'situvo-kyoai');
+    const at = next.settings.rules.findIndex(r => r.id === 'call-kyoai');
+    next.settings.rules.splice(at >= 0 ? at + 1 : next.settings.rules.length, 0, { ...def, startsOn: today });
+  }
+  if (next.settings.planPerks && next.settings.planPerks.ketsuniku) {
+    const call = next.settings.planPerks.ketsuniku.find(x => x.rule === 'call-ketsuniku');
+    const def = defaultPlanPerks().ketsuniku[0];
+    if (call) { delete call.noInherit; call.inheritAs = def.inheritAs; call.inheritNote = def.inheritNote; }
+  }
+  next.settings.rulesVersion = 2;
+  next.settings.updatedAt = now;
+  return next;
+}
 
 // ---- csv.js
 
@@ -355,7 +377,7 @@ function generate(data, today) {
       if (rule.kind === 'join') {
         for (const run of eligibleRuns(fan, rule.planIds)) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
       } else if (rule.kind === 'interval') {
-        for (const t of intervalTickets(fan, rule, horizon)) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.label, due: t.due, periodStart: t.periodStart });
+        for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.label, due: t.due, periodStart: t.periodStart });
       } else if (rule.kind === 'birthday') {
         if (!fan.birthday) continue;
         for (const run of eligibleRuns(fan, rule.planIds)) {
@@ -928,16 +950,17 @@ function perksForPlan(settings, planId) {
   const all = settings.planPerks || defaultPlanPerks();
   const plans = [...settings.plans].sort((a, b) => a.order - b.order);
   const me = plans.find(p => p.id === planId);
-  if (!me) return { own: [], inherited: [], excluded: [], tenure: '' };
-  const inherited = [], excluded = [];
+  if (!me) return { own: [], inherited: [], excluded: [], notes: [], tenure: '' };
+  const inherited = [], excluded = [], notes = [];
   for (const p of plans.filter(p => p.order < me.order).sort((a, b) => b.order - a.order)) {
     const list = all[p.id] || [];
     excluded.push(...list.filter(x => x.noInherit));
-    const perks = list.filter(x => !x.noInherit);
+    const perks = list.filter(x => !x.noInherit).map(x => (x.inheritAs ? { ...x.inheritAs, from: x.name } : x));
+    notes.push(...list.filter(x => !x.noInherit && x.inheritNote).map(x => x.inheritNote));
     if (perks.length) inherited.push({ planId: p.id, perks });
   }
   const tenureRule = settings.rules.find(r => r.kind === 'tenure' && r.months === 12);
-  return { own: all[planId] || [], inherited, excluded, tenure: tenureRule ? ((tenureRule.labelByPlan || {})[planId] || tenureRule.label) : '' };
+  return { own: all[planId] || [], inherited, excluded, notes, tenure: tenureRule ? ((tenureRule.labelByPlan || {})[planId] || tenureRule.label) : '' };
 }
 
 // ---- ui.js
@@ -1006,6 +1029,7 @@ async function boot() {
   if (s === 'needsFile') return firstRun();
   try {
     data = await storage.load();
+    if (data) { const up = upgradeSettings(data, todayLocal(), new Date().toISOString()); if (up !== data) data = await storage.save(up); }
     lastMtime = await storage.lastModified();
   } catch (e) {
     return gate('データを読み込めません', h(e.message), 'もう一度読み込む', async () => boot(), repick(storage));
@@ -1113,6 +1137,7 @@ function renderPlans() {
         <div class="pc-head"><b>${h(p.name)}</b><span>${yen(p.price)}/月</span></div>
         <h4>★ ${h(p.name.replace(/プラン$/, ''))}の特典</h4><ul class="plain">${x.own.map(perk).join('') || '<li class="muted">なし</li>'}</ul>
         ${x.inherited.map(g => `<h4>▼ ${pn(g.planId)}から</h4><ul class="plain">${g.perks.map(perk).join('')}</ul>`).join('')}
+        ${x.notes.length ? x.notes.map(n => `<p class="small excl">※ ${h(n)}</p>`).join('') : ''}
         ${x.excluded.length ? `<p class="small excl">対象外：${x.excluded.map(e => h(e.name)).join('、')}</p>` : ''}
         <div class="pc-tenure">🎁 12か月継続特典：<b>${h(x.tenure)}</b></div></section>`;
     }).join('')}</div>`;
@@ -1181,7 +1206,8 @@ function renderList(list) {
 function itemRow(i) {
   const f = data.fans[i.fanId] || {};
   const plan = planOn(f, i.due) || planOn(f, today) || (f.planHistory || []).at(-1)?.planId;
-  const meta = KIND_META[i.kind] || { icon: '・', label: '', color: '#777' };
+  const rule0 = data.settings.rules.find(r => r.id === i.ruleId);
+  const meta = { ...(KIND_META[i.kind] || { icon: '・', label: '', color: '#777' }), ...(rule0 && rule0.icon ? { icon: rule0.icon } : {}) };
   const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
   const btns = [`<button class="btn primary deliver">渡した</button>`,
     i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
