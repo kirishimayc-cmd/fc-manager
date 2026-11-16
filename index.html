@@ -103,6 +103,7 @@ details summary{cursor:pointer;margin-top:10px}
 .excl{color:#8a5a00;background:#fff8e6;border-radius:8px;padding:6px 8px;margin-top:10px}.pc-tenure{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px}
 .perkplan{margin-bottom:10px}.perkrow{display:flex;gap:10px;align-items:center;margin:4px 0}.perkrow input[name=perkname]{flex:1}
 .namelink{color:var(--ink);text-decoration:none;font-weight:600}.namelink:hover{color:var(--wine);text-decoration:underline}
+.planrow{margin:2px 0 6px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -971,7 +972,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
+let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1194,9 +1195,9 @@ function renderList(list) {
   const head = `<div class="listhead"><h2>渡すものリスト</h2>${list.items.length ? `<div class="controls">
     <span class="ctl-label">並べ替え</span>${[['due', '期限順'], ['name', '名前順'], ['kind', '種類順']].map(([k, l]) => `<button class="sortbtn ${listSort === k ? 'on' : ''}" data-sort="${k}">${l}</button>`).join('')}
     <span class="ctl-label">絞り込み</span><button class="kindchip ${listKind === 'all' ? 'on' : ''}" data-kind="all">すべて ${list.items.length}</button>${Object.entries(KIND_META).map(([k, m]) => { const n = list.items.filter(i => i.kind === k).length; return n ? `<button class="kindchip ${listKind === k ? 'on' : ''}" data-kind="${k}" style="--k:${m.color}">${m.icon}${m.label} ${n}</button>` : ''; }).join('')}
-  </div>` : ''}</div>`;
+  </div>` : ''}</div>${list.items.length ? `<div class="controls planrow"><span class="ctl-label">プラン</span><button class="planchip ${listPlan === 'all' ? 'on' : ''}" data-plan="all">すべて</button>${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => { const n = list.items.filter(i => itemPlan(i) === p.id).length; return n ? `<button class="planchip ${listPlan === p.id ? 'on' : ''}" data-plan="${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">${h(p.name.replace(/プラン$/, ''))} ${n}</button>` : ''; }).join('')}</div>` : ''}`;
   if (!list.items.length) return head + `<div class="empty">今月・来月に渡すものはありません 🎉</div>`;
-  const shown = sortItems(filterItems(list.items, listKind), listSort, fanName);
+  const shown = sortItems(filterItems(list.items, listKind).filter(i => listPlan === 'all' || itemPlan(i) === listPlan), listSort, fanName);
   return head + GROUPS.map(([st, label]) => {
     const its = shown.filter(i => i.status === st);
     if (!its.length) return '';
@@ -1204,9 +1205,14 @@ function renderList(list) {
   }).join('') || '<div class="empty">この種類の渡すものはありません</div>';
 }
 
+function itemPlan(i) {
+  const f = data.fans[i.fanId] || {};
+  return planOn(f, i.due) || planOn(f, today) || (f.planHistory || []).at(-1)?.planId;
+}
+
 function itemRow(i) {
   const f = data.fans[i.fanId] || {};
-  const plan = planOn(f, i.due) || planOn(f, today) || (f.planHistory || []).at(-1)?.planId;
+  const plan = itemPlan(i);
   const rule0 = data.settings.rules.find(r => r.id === i.ruleId);
   const meta = { ...(KIND_META[i.kind] || { icon: '・', label: '', color: '#777' }), ...(rule0 && rule0.icon ? { icon: rule0.icon } : {}) };
   const tags = [i.count > 1 ? `<span class="tag strong">${i.count}回分</span>` : '', i.scheduled ? '<span class="tag">予定</span>' : '', i.fanLeft ? '<span class="tag gray">退会済み</span>' : ''].join('');
@@ -1214,7 +1220,7 @@ function itemRow(i) {
     i.kind === 'interval' ? `<button class="btn ghost sched">予定日</button><button class="btn ghost carry">次に回す</button>` : '',
     i.fanLeft ? `<button class="btn ghost dismiss">対象外</button>` : '',
     i.kind === 'extra' ? `<button class="btn ghost cancelExtra">取消</button>` : ''].join('');
-  return `<div class="item st-${h(i.status)}" data-key="${h(i.key)}" data-kind="${h(i.kind)}">
+  return `<div class="item st-${h(i.status)}" data-key="${h(i.key)}" data-kind="${h(i.kind)}" data-plan="${h(plan || '')}">
     <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
     <div class="who"><button class="link fanlink namelink" data-id="${h(i.fanId)}">${h(f.name || i.fanId)}</button> ${badge(plan)}</div>
     <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
@@ -1324,6 +1330,7 @@ function wire(list) {
   document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
   document.querySelectorAll('.sortbtn').forEach(b => b.onclick = () => { listSort = b.dataset.sort; render(); });
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
+  document.querySelectorAll('#list .planchip').forEach(b => b.onclick = () => { listPlan = b.dataset.plan; render(); });
   const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items : [];
   const byKey = Object.fromEntries([...list.items, ...extraItems].map(i => [i.key, i]));
   document.querySelectorAll('#page .item').forEach(row => {
@@ -1346,7 +1353,7 @@ function wireTab() {
   document.querySelectorAll('.fanlink').forEach(b => b.onclick = () => openFan(b.dataset.id));
   const redraw = (all = true) => { if (all) { $('#tabContent').innerHTML = renderFans(); } else { $('#rosterTable').innerHTML = renderRosterTable(); } wireTab(); };
   document.querySelectorAll('.chip').forEach(b => b.onclick = () => { fanFilter = b.dataset.filter; redraw(); });
-  document.querySelectorAll('.planchip').forEach(b => b.onclick = () => { fanPlan = b.dataset.plan; redraw(); });
+  document.querySelectorAll('#tabContent .planchip').forEach(b => b.onclick = () => { fanPlan = b.dataset.plan; redraw(); });
   const rs = $('#rosterSearch');
   if (rs) rs.oninput = () => { fanQuery = rs.value; redraw(false); };
   document.querySelectorAll('th.sortable').forEach(th => th.onclick = () => {
