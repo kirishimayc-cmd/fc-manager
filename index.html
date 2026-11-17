@@ -154,6 +154,7 @@ details summary{cursor:pointer;margin-top:10px}
   .pagehead{flex-direction:column;align-items:flex-start;gap:8px}.membergrid,.dashgrid{grid-template-columns:1fr !important}
 }
 .morecount{display:block;width:auto;margin:10px 4px 0 auto;text-align:right;font-size:13px}
+td.content .badge{margin:0 6px 0 0}
 </style>
 </head>
 <body>
@@ -1537,13 +1538,23 @@ function recordTitle(r) {
   return rule.kind === 'tenure' ? `${rule.months}か月継続` : rule.label;
 }
 
+// その記録が「どのプランの特典か」：通話はそのプランの特典、継続特典は節目の日のプラン、ほかは渡した日のプラン
+function recordPlan(r) {
+  const f = data.fans[r.fanId];
+  if (!f) return null;
+  const rule = ruleOf(r.key);
+  if (rule && rule.kind === 'interval' && rule.planIds.length === 1) return rule.planIds[0];
+  if (rule && rule.kind === 'tenure') { const d = reachDate(f, rule.months); if (d && planOn(f, d)) return planOn(f, d); }
+  return planOn(f, r.date || today) || (f.planHistory.at(-1) || {}).planId || null;
+}
+
 function renderRecords() {
   const recs = Object.values(data.records).filter(r => !r.deleted && (r.type === 'delivered' || r.type === 'dismissed'))
     .sort((a, b) => compare(b.date || b.updatedAt, a.date || a.updatedAt) || compare(b.updatedAt, a.updatedAt));
   if (!recs.length) return '<div class="empty">まだ記録はありません</div>';
   return `<div class="scroll"><table><thead><tr><th>渡した日</th><th>名前</th><th>内容</th><th>メモ</th><th>記録したPC</th><th></th></tr></thead><tbody>${recs.map(r => `
     <tr class="record"><td>${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td><td><button class="link fanlink" data-id="${h(r.fanId)}">${h(fanName(r.fanId))}</button></td>
-    <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}</td>
+    <td class="content">${badge(recordPlan(r))} ${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${(r.coversKeys || []).length ? ` <span class="tag">${r.coversKeys.length + 1}回分</span>` : ''}</td>
     <td>${h(r.memo)}</td><td class="muted">${h(r.device)}</td>
     <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></div>`;
 }
@@ -1705,7 +1716,7 @@ function renderMember() {
           <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></div>
 
           <div class="sub">${recs.length ? `<details><summary class="small muted">記録の一覧（日付・メモの修正）${recs.length}件</summary><table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
-            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
+            <td class="content">${badge(recordPlan(r))} ${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
             <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></details>` : ''}
           ${migrated.length ? `<details><summary class="small muted">前のツールから引き継いだ分（渡し済み扱い）${migrated.length}件</summary><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul></details>` : ''}</div>
         </details>
