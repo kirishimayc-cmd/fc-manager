@@ -215,7 +215,7 @@ const OLD_RULES_UNTIL = '2026-11-30';   // 11月までは旧の特典内容、12
 
 function oldPlanPerks() {
   return {
-    toriko: [{ name: '最新情報や先行公開（不定期）' }, { name: '気まぐれブログ（不定期）' }, { name: 'Discordサーバーご招待', rule: 'discord' }, { name: '月1FCルーレット配信（激レア特典もらえる）' }, { name: 'FC限定グッズショップ' }, { name: '限定配信（不定期）' }],
+    toriko: [{ name: '最新情報や先行公開（不定期）' }, { name: '気まぐれブログ（不定期）' }, { name: 'Discordサーバーご招待' }, { name: '月1FCルーレット配信（激レア特典もらえる）' }, { name: 'FC限定グッズショップ' }, { name: '限定配信（不定期）' }],
     keiai: [{ name: '日常ボイスや落書き（不定期）' }, { name: 'プチ漫画投稿（不定期）' }, { name: 'くれあと加入者全員で通話交流会（不定期）' }],
     suuhai: [{ name: '季節や行事ごとシチュエーションボイス' }, { name: 'FC限定グッズショップの300円値引き' }],
     ketsuniku: [{ name: '1on1通話券（10分・3か月に1回）', rule: 'call-ketsuniku', noInherit: true }, { name: 'ディスコ個人チャット（返信不定期）' }, { name: '鍵垢Xの公開（不定期）', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
@@ -226,7 +226,7 @@ const OLD_TENURE = { toriko: 'シンプル可愛い壁紙プレゼント', keiai
 
 function defaultPlanPerks() {
   return {
-    toriko: [{ name: '最新情報＆ブログ' }, { name: 'FCサーバー招待（Discord）', rule: 'discord' }, { name: '特典ルーレット（豪華特典）' }, { name: 'ネップリ' }, { name: 'FC限定ショップ' }],
+    toriko: [{ name: '最新情報＆ブログ' }, { name: 'FCサーバー招待（Discord）' }, { name: '特典ルーレット（豪華特典）' }, { name: 'ネップリ' }, { name: 'FC限定ショップ' }],
     keiai: [{ name: 'くれあの日常（日常ボイス・らくがき・好き語り）' }, { name: 'リスナーゲーム通話交流会（不定期・ミュートOK）' }, { name: '限定配信（不定期）' }, { name: 'プチ漫画（不定期）' }],
     suuhai: [{ name: '季節ごとシチュエーションボイス' }, { name: 'FC限定グッズ300円引き' }],
     ketsuniku: [{ name: '10分通話 or 名前呼びシチュボ（3か月に1回）', rule: 'call-ketsuniku', inheritAs: { name: '名前呼びシチュボ（3か月に1回）', rule: 'situvo-kyoai' }, inheritNote: '血肉の「10分通話」は1時間通話券に含まれるため、名前呼びシチュボを自動で受け取ります' }, { name: '鍵垢Xの公開', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
@@ -241,11 +241,10 @@ function defaultSettings() {
     clubName: '生稚くれあファンクラブ',
     plans,
     rules: [
-      { id: 'discord', kind: 'join', planIds: all, label: 'FCサーバー招待' },
-      { id: 'kagiaka', kind: 'join', planIds: ['ketsuniku', 'kyoai'], label: '鍵垢X公開' },
+      { id: 'kagiaka', kind: 'join', planIds: ['ketsuniku', 'kyoai'], label: '鍵垢X公開' , off: true },
       { id: 'call-ketsuniku', kind: 'interval', planIds: ['ketsuniku'], months: 3, label: '10分通話 or 名前呼びシチュボ', variants: ['通話', 'シチュボ'], before: { until: OLD_RULES_UNTIL, label: '1on1通話券（10分）' } },
       { id: 'call-kyoai', kind: 'interval', planIds: ['kyoai'], months: 1, label: '1時間通話券', before: { until: OLD_RULES_UNTIL, label: '1on1通話券（1時間）' } },
-      { id: 'situvo-kyoai', kind: 'interval', planIds: ['kyoai'], months: 3, label: '名前呼びシチュボ（3か月に1回）', icon: '🎤', startsOn: '2026-12-01' },
+      { id: 'situvo-kyoai', kind: 'interval', planIds: ['kyoai'], months: 3, label: '名前呼びシチュボ（3か月に1回）', icon: '🎤', startsOn: '2026-12-01', off: true },
       { id: 'birthday', kind: 'birthday', planIds: ['ketsuniku', 'kyoai'], label: 'お誕生日ビデオレター' },
       { id: 'tenure-12', kind: 'tenure', planIds: all, months: 12, label: '12か月継続特典',
         labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' },
@@ -253,7 +252,7 @@ function defaultSettings() {
     ],
     planPerks: defaultPlanPerks(),
     planPerksBefore: { until: OLD_RULES_UNTIL, perks: oldPlanPerks() },
-    rulesVersion: 3,
+    rulesVersion: 4,
     updatedAt: '1970-01-01T00:00:00.000Z',
   };
 }
@@ -266,13 +265,27 @@ const planByName = (s, name) => s.plans.find(p => p.name === String(name).trim()
 // 以前に保存された設定を新しい既定に合わせる（1回だけ）。ユーザーが消したルールは戻さない。
 function upgradeSettings(data, today, now) {
   const st = data.settings || {};
-  if ((st.rulesVersion || 1) >= 3) return data;
+  if ((st.rulesVersion || 1) >= 4) return data;
   const next = JSON.parse(JSON.stringify(data));
   if ((st.rulesVersion || 1) < 2) upgradeTo2(next, today);
-  upgradeTo3(next);
-  next.settings.rulesVersion = 3;
+  if ((st.rulesVersion || 1) < 3) upgradeTo3(next);
+  upgradeTo4(next, now);
+  next.settings.rulesVersion = 4;
   next.settings.updatedAt = now;
   return next;
+}
+
+// Discord招待は管理しない（FCに入っている時点でサーバーにも入っている）。
+// 鍵垢と名前呼びシチュボは、加入者が増えるまで管理を止める（設定から戻せる）。
+function upgradeTo4(next, now) {
+  next.settings.rules = next.settings.rules.filter(r => r.id !== 'discord');
+  for (const r of next.settings.rules) if (r.id === 'kagiaka' || r.id === 'situvo-kyoai') r.off = true;
+  const strip = perks => Object.values(perks || {}).forEach(list => (list || []).forEach(p => { if (p.rule === 'discord') delete p.rule; }));
+  strip(next.settings.planPerks);
+  strip(next.settings.planPerksBefore && next.settings.planPerksBefore.perks);
+  for (const r of Object.values(next.records || {})) {
+    if (String(r.key || '').startsWith('discord|') && !r.deleted) { r.deleted = true; r.updatedAt = now; }
+  }
 }
 
 function upgradeTo3(next) {
@@ -457,9 +470,10 @@ function generate(data, today) {
   for (const fan of Object.values(data.fans)) {
     const base = { fanId: fan.memberNo, fanLeft: fan.status === 'left', count: 1, coversKeys: [], scheduled: false };
     for (const rule of data.settings.rules) {
+      if (rule.off) continue;
       const push = (key, due, title) => items.push({ ...base, key, ruleId: rule.id, kind: rule.kind, title, due });
       if (rule.kind === 'join') {
-        for (const run of eligibleRuns(fan, rule.planIds)) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
+        for (const run of eligibleRuns(fan, rule.planIds)) if (!rule.startsOn || compare(run.start, rule.startsOn) >= 0) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
       } else if (rule.kind === 'interval') {
         for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: isOld(rule, today) ? rule.before.label : rule.label, due: t.due, periodStart: t.periodStart });
       } else if (rule.kind === 'birthday') {
@@ -794,9 +808,10 @@ function migrateV4(v4, today, ctx) {
       if (!v || !v.given || !data.fans[fid]) continue;
       const [pk, bid] = k.split('::');
       const name = (benefitName(pk, bid) || {}).name || '';
-      const ruleId = /discord|サーバー/i.test(name) ? 'discord' : /鍵垢/.test(name) ? 'kagiaka' : null;
-      if (!ruleId) { droppedPerkChecks++; continue; }
-      const rule = settings.rules.find(r => r.id === ruleId);
+      if (/discord|サーバー/i.test(name)) continue; // Discord招待は管理しない
+      const ruleId = /鍵垢/.test(name) ? 'kagiaka' : null;
+      const rule = ruleId && settings.rules.find(r => r.id === ruleId);
+      if (!rule) { droppedPerkChecks++; continue; }
       const run = data.fans[fid].planHistory.find(h => rule.planIds.includes(h.planId));
       if (run) add({ key: `${ruleId}|${fid}|${run.start}`, fanId: fid, type: 'delivered', date: toDate(v.date) || today });
     }
@@ -1168,6 +1183,7 @@ const ctx = () => ({ device: storage.deviceName(), now: new Date().toISOString()
 const fanName = id => (data.fans[id] ? data.fans[id].name : `#${id}`);
 const badge = planId => { const p = planById(data.settings, planId); return p ? `<span class="badge" style="--c:${PLAN_COLORS[planId] || '#667'}">${h(p.name.replace(/プラン$/, ''))}</span>` : ''; };
 const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
+const tracked = ruleId => { const r = ruleId && data.settings.rules.find(x => x.id === ruleId); return !!(r && !r.off); };
 const ruleOf = key => data.settings.rules.find(r => r.id === key.split('|')[0]);
 
 async function commit(next) {
@@ -1356,7 +1372,7 @@ function renderPlans() {
   const old = data.settings.planPerksBefore;
   const ver = planVer || (old && today <= old.until ? 'old' : 'new');
   const at = ver === 'old' && old ? old.until : null;   // null = 新の内容
-  const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">リストで管理</span>' : ''}</li>`;
+  const perk = x => `<li>${h(x.name)}${tracked(x.rule) ? ' <span class="tracked">リストで管理</span>' : ''}</li>`;
   const verBar = old ? `<div class="verbar"><button class="verbtn ${ver === 'old' ? 'on' : ''}" data-ver="old">〜${md(old.until)}（旧）</button><button class="verbtn ${ver === 'new' ? 'on' : ''}" data-ver="new">${md(addDays(old.until, 1))}〜（新）</button>
     <span class="muted small">${today <= old.until ? `今は旧の内容です。${md(addDays(old.until, 1))}から全員が新の内容になります。` : '今は新の内容です。'}</span></div>` : '';
   return `${verBar}<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「リストで管理」の特典は、「渡すもの」で期限を管理しています。</p>
@@ -1822,7 +1838,7 @@ function previewV4(v4) {
 // ---------- settings ----------
 function renderSettings() {
   const rules = data.settings.rules.map(r => `<tr><td>${h(KIND_LABEL[r.kind])}${r.months ? `（${r.months}か月）` : ''}</td>
-    <td>${h(r.label)}</td><td>${r.planIds.map(badge).join('')}</td><td class="nowrap"><button type="button" class="btn small ghost editrule" data-id="${h(r.id)}">編集</button></td></tr>`).join('');
+    <td>${h(r.label)}${r.off ? ' <span class="muted small">（いまは管理していません）</span>' : ''}</td><td>${r.planIds.map(badge).join('')}</td><td class="nowrap"><button type="button" class="btn small ghost toggleRule" data-id="${h(r.id)}">${r.off ? '管理する' : '止める'}</button> <button type="button" class="btn small ghost editrule" data-id="${h(r.id)}">編集</button></td></tr>`).join('');
   const tabs = [['basic', '基本・共有'], ['perks', '特典'], ['data', 'データ']];
   const bar = `<div class="settabs">${tabs.map(([k, l]) => `<button class="settab ${setTab === k ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</div>`;
   if (setTab === 'perks') return bar + `<section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
@@ -1830,7 +1846,7 @@ function renderSettings() {
     <section class="panel"><div class="secthead"><h2>プラン特典の中身</h2><button type="button" class="btn small primary" id="savePerks">保存</button></div>
       <p class="muted small">ここで編集するのは12月からの新しい内容です。「上位にも」のチェックを外すと、上のプランには引き継がれません。</p>
       ${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => `<div class="perkplan" data-plan="${p.id}"><h4>${badge(p.id)} ${h(p.name)}</h4>
-        ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? '<span class="tracked">リストで管理</span>' : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
+        ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? (tracked(x.rule) ? '<span class="tracked">リストで管理</span>' : '<span class="muted small">管理を止めています</span>') : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
         <button type="button" class="link small addperk">＋特典を追加</button></div>`).join('')}</section>
     `;
   if (setTab === 'data') return bar + `<section class="panel"><h2>CSV取込の履歴</h2>${(() => { const logs = Object.values(data.records).filter(r => r.type === 'csvlog' && !r.deleted).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 20);
@@ -1890,6 +1906,19 @@ function wireSettings() {
   });
   on('#addRule', () => openRuleEditor(null, { kind: 'tenure', months: 24 }));
   d.querySelectorAll('.editrule').forEach(b => b.onclick = () => openRuleEditor(b.dataset.id));
+  d.querySelectorAll('.toggleRule').forEach(b => b.onclick = () => {
+    const next = structuredClone(data), rule = next.settings.rules.find(x => x.id === b.dataset.id);
+    if (rule.off) {
+      if (!confirm(`「${rule.label}」の管理を始めます。今日より前の分は出さず、${md(today)}からの分だけ「渡すもの」に出します。`)) return;
+      delete rule.off;
+      if (!rule.startsOn || rule.startsOn < today) rule.startsOn = today;
+    } else {
+      if (!confirm(`「${rule.label}」の管理を止めます。「渡すもの」に出なくなります（これまでの記録は残ります）。`)) return;
+      rule.off = true;
+    }
+    next.settings.updatedAt = new Date().toISOString();
+    commit(next);
+  });
   on('#exportBtn', () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
