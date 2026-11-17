@@ -63,7 +63,7 @@ table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.
 .kpi span{display:block;color:var(--muted);font-size:12px}.kpi b{font-size:26px;letter-spacing:.5px}.kpi.red b{color:var(--warn)}.kpi.red{background:#fff7f6;border-color:#f5c8c2}
 .dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dashgrid .span2{grid-column:1/-1}.dashgrid .panel{margin:0}
 .secthead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.secthead h2{margin:0}
-.more{text-align:right;margin:6px 4px 0}
+
 ul.dl{list-style:none;margin:0;padding:0}ul.dl li{padding:8px 0;border-bottom:1px solid #f3eff2}.when{display:inline-block;min-width:68px;font-weight:700;color:var(--wine)}
 .names{line-height:1.9;margin:4px 0 8px}
 .bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px;background:var(--wine)}.bar b{text-align:right}
@@ -153,6 +153,7 @@ details summary{cursor:pointer;margin-top:10px}
   .hero{flex-direction:column;align-items:flex-start}.hero-ring{align-self:center}.qas{grid-template-columns:repeat(4,1fr);gap:8px}.qa{padding:12px 4px;font-size:11px}.qa span{width:40px;height:40px}
   .pagehead{flex-direction:column;align-items:flex-start;gap:8px}.membergrid,.dashgrid{grid-template-columns:1fr !important}
 }
+.morecount{display:block;width:auto;margin:10px 4px 0 auto;text-align:right;font-size:13px}
 </style>
 </head>
 <body>
@@ -1409,7 +1410,7 @@ function renderDashboard(list) {
     ${renderNotices(list.notices)}
     <div class="dashgrid">
       <section class="panel span2"><div class="secthead"><h2>⚠ 急ぎ（期限切れ・今月）</h2><button class="link" data-goto="perks">すべて見る →</button></div>
-        <div id="dashUrgent">${urgent.length ? urgent.slice(0, 5).map(itemRow).join('') + (urgent.length > 5 ? `<p class="muted small more">ほか ${urgent.length - 5}件</p>` : '') : '<div class="empty">急ぎの特典はありません 🎉</div>'}</div></section>
+        <div id="dashUrgent">${urgent.length ? urgent.slice(0, 5).map(itemRow).join('') + (urgent.length > 5 ? `<button class="link morecount" data-goto="perks">ほか ${urgent.length - 5}件 → すべて見る</button>` : '') : '<div class="empty">急ぎの特典はありません 🎉</div>'}</div></section>
       <section class="panel"><h2>📅 もうすぐの節目</h2>${milestones.length ? `<ul class="dl">${milestones.slice(0, 8).map(m => `<li><span class="when">あと${daysTo(m.d)}日</span>${who(m.f)} ${badge(planOn(m.f, m.d))}<div class="muted small">${m.months}か月：${h(m.label)}（${ymd(m.d)}）</div></li>`).join('')}</ul>` : '<p class="muted">2か月以内に節目を迎える人はいません</p>'}</section>
       <section class="panel"><h2>👥 新規・退会候補</h2>
         <h4>新規（1か月以内） ${newcomers.length}人</h4>${newcomers.length ? `<p class="names">${newcomers.map(who).join('、')}</p>` : '<p class="muted small">なし</p>'}
