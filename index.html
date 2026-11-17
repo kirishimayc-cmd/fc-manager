@@ -10,8 +10,6 @@
 *{box-sizing:border-box}body{margin:0}
 h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:4px 0 10px}h4{font-size:14px;margin:16px 0 6px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 10px}
-.brand b{font-size:17px;color:var(--wine);margin-right:12px}.sum{color:var(--muted);font-size:13px}.sum i{font-style:normal;margin:0 6px;color:#cfc8cf}.sum .warn{color:var(--warn);font-weight:700}
 .actions,.row{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid transparent;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn.primary{background:var(--wine);color:#fff}.btn.primary:hover{filter:brightness(1.1)}.btn.ghost{background:#fff;border-color:#ddd5db;color:var(--ink)}.btn.ghost:hover{background:var(--wine-soft)}
@@ -19,19 +17,17 @@ h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size
 .link{background:none;border:0;padding:0;color:var(--wine);text-decoration:underline;cursor:pointer;font:inherit}
 .group{margin-top:6px}.glabel{font-size:12px;font-weight:700;color:var(--muted);padding:8px 2px 4px;border-bottom:1px solid var(--line)}.glabel span{margin-left:6px;background:#eee;border-radius:9px;padding:0 7px}
 .group.overdue .glabel{color:var(--warn)}.group.overdue .glabel span{background:#fde7e5;color:var(--warn)}
-.item{display:grid;grid-template-columns:96px minmax(140px,190px) 1fr auto;gap:12px;align-items:center;padding:10px 8px;border-bottom:1px solid #f3eff2;border-radius:6px}.item:nth-child(even){background:#fcf9fa}
-.item:hover{background:#fdfafb}.who{font-weight:600}.due{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}.due small{display:block;font-size:10px;color:#2f5aa0;font-weight:600}.group.overdue .due{color:var(--warn);font-weight:700}.btns{display:flex;gap:6px;justify-content:flex-end}
+.item{display:grid;grid-template-columns:34px 92px minmax(130px,180px) 1fr 34px;gap:12px;align-items:center;padding:10px 8px;border-bottom:1px solid #f3eff2;border-radius:6px}.item:nth-child(even){background:#fcf9fa}
+.item:hover{background:#fdfafb}.who{font-weight:600}.due{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}.due small{display:block;font-size:10px;color:#2f5aa0;font-weight:600}.group.overdue .due{color:var(--warn);font-weight:700}
 .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:4px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);vertical-align:1px}
 .tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:#eef3fb;color:#2f5aa0}.tag.strong{background:#fff1d6;color:#8a5a00;font-weight:700}.tag.gray{background:#eee;color:#666}
 .empty{color:var(--muted);text-align:center;padding:22px}
 #notices .notice,.notice{background:#fff8e6;border:1px solid #f3dfae;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:13px}
 .banner{background:#eef5ff;border:1px solid #c7dbf7;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px;display:flex;justify-content:space-between}.banner .x{border:0;background:none;cursor:pointer}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 10px}.tab{border:0;background:none;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}.tab.on{color:var(--wine);border-bottom-color:var(--wine);font-weight:700}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.chip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;cursor:pointer}.chip.on{background:var(--wine);color:#fff;border-color:var(--wine)}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 8px;border-bottom:1px solid #f1ecf0;text-align:left;vertical-align:middle}th{color:var(--muted);font-weight:600;font-size:12px;position:sticky;top:0;background:#fff}
 .scroll{max-height:460px;overflow:auto}.scroll.short{max-height:360px}.r{text-align:right}.num{color:var(--muted);font-variant-numeric:tabular-nums}.nowrap{white-space:nowrap}.nowrap .btn{margin-left:4px}.total td{border-top:2px solid var(--line)}
 .muted{color:var(--muted)}.small{font-size:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:16px}
 .gate{max-width:560px;margin:70px auto;text-align:center;padding:30px}.gate p{line-height:1.8}.gate .row{justify-content:center;margin-top:16px}
 dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);box-shadow:0 20px 60px #0003}dialog.wide{width:min(640px,94vw)}dialog::backdrop{background:#2a1a2266}
 dialog form{padding:18px 20px}.dlg-body{max-height:65vh;overflow:auto}.dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
@@ -40,18 +36,17 @@ input,select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid #d8d0d
 label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:8px;font-weight:500}label.inline-wide input{margin:0}
 .field{font-size:13px;font-weight:600;margin:8px 0}.field select{width:auto;display:inline-block;margin:0 4px}ul.plain{margin:0;padding-left:18px;font-size:13px;line-height:1.8}
 .dropcover{display:none}body.dragging .dropcover{display:flex;position:fixed;inset:10px;border:3px dashed var(--wine);border-radius:16px;background:#fff9;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--wine);pointer-events:none;z-index:10}
-@media(max-width:760px){.item{grid-template-columns:1fr auto}.what{grid-column:1/-1}.btns{grid-column:1/-1;justify-content:flex-start}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+@media(max-width:760px){.item{grid-template-columns:34px 1fr 34px}.item .due,.item .who{grid-column:2}.what{grid-column:2}.grid2{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
 .notice.warn-strong{background:#fdecea;border-color:#f5b5ad;color:#8a1c12;font-weight:600}
 .fanpick{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 10px}label.inline-row{display:flex;align-items:center;gap:6px;font-weight:500;margin:4px 0}label.inline-row input{width:auto;margin:0}
-.listhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.listhead h2{margin:0}
+.listhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:4px}.listhead h2{margin:0}
 .controls{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.ctl-label{font-size:11px;color:var(--muted);margin:0 2px 0 8px}
-.sortbtn,.kindchip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
-.sortbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}.kindchip.on{background:var(--k,var(--wine));color:#fff;border-color:var(--k,var(--wine))}
+.kindchip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.kindchip.on{background:var(--k,var(--wine));color:#fff;border-color:var(--k,var(--wine))}
 .kindtag{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;margin-right:8px;background:color-mix(in srgb,var(--k) 13%,#fff);font-size:13px;vertical-align:middle}
 .what{line-height:1.45}.group.overdue .item{background:#fff8f7}.group.overdue .item:nth-child(even){background:#fdf1ef}
 table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.fans th.sortable:hover{color:var(--wine)}table.fans tbody tr:hover{background:#fdf6f8}table.fans td{padding:9px 8px}
 .st{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}.st-active{background:#e9f6ee;color:#1e7a43}.st-leftCandidate{background:#fff1d6;color:#8a5a00}.st-left{background:#eee;color:#666}
-@media(max-width:760px){.item{grid-template-columns:80px 1fr}.what,.btns{grid-column:1/-1}}
 
 .shell{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
 .side{background:#2b1d24;color:#f3e9ee;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
@@ -68,7 +63,7 @@ table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.
 .kpi span{display:block;color:var(--muted);font-size:12px}.kpi b{font-size:26px;letter-spacing:.5px}.kpi.red b{color:var(--warn)}.kpi.red{background:#fff7f6;border-color:#f5c8c2}
 .dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dashgrid .span2{grid-column:1/-1}.dashgrid .panel{margin:0}
 .secthead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.secthead h2{margin:0}
-#dashUrgent .item{grid-template-columns:96px minmax(120px,170px) 1fr auto}.more{text-align:right;margin:6px 4px 0}
+.more{text-align:right;margin:6px 4px 0}
 ul.dl{list-style:none;margin:0;padding:0}ul.dl li{padding:8px 0;border-bottom:1px solid #f3eff2}.when{display:inline-block;min-width:68px;font-weight:700;color:var(--wine)}
 .names{line-height:1.9;margin:4px 0 8px}
 .bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px}.bar b{text-align:right}
@@ -88,12 +83,10 @@ table.roster td.nm{font-size:16px;font-weight:700;white-space:nowrap}table.roste
 .memberhead .mh-name{font-size:24px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .memberhead .mh-facts{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:8px;color:var(--muted);font-size:13px}.memberhead .mh-facts b{color:var(--ink);font-size:15px}
 .dot.big{width:16px;height:16px;margin-right:2px}
-.membergrid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;align-items:start}.mcol .panel{margin-bottom:12px}
-#memberUpcoming .item{grid-template-columns:90px 1fr auto}#memberUpcoming .item .who{display:none}
+.membergrid{display:grid;grid-template-columns:1.8fr 1fr;gap:12px;align-items:start}.mcol .panel{margin-bottom:12px}
 #memo{width:100%;font:inherit;font-size:14px;padding:10px;border:1px solid #d8d0d6;border-radius:8px;resize:vertical}
 details summary{cursor:pointer;margin-top:10px}
 @media(max-width:860px){.membergrid{grid-template-columns:1fr}}
-#memberUpcoming .item.st-overdue{background:#fff3f1}#memberUpcoming .item.st-overdue .due{color:var(--warn)}#memberUpcoming .item.st-overdue .due::after{content:'期限切れ';display:block;font-size:10px;font-weight:700}
 
 .lastcsv{font-size:12px;color:var(--muted);margin-right:6px;align-self:center}.lastcsv.warn{color:var(--warn);font-weight:700}
 .plangrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.plangrid .panel{margin:0}
@@ -106,11 +99,10 @@ details summary{cursor:pointer;margin-top:10px}
 .planrow{margin:2px 0 6px;justify-content:flex-end}
 
 /* ---- one-click rows ---- */
-.item{grid-template-columns:34px 92px minmax(130px,180px) 1fr 34px !important}
-#dashUrgent .item{grid-template-columns:34px 92px minmax(120px,170px) 1fr 34px !important}
+#dashUrgent .item{grid-template-columns:34px 92px minmax(120px,170px) 1fr 34px}
 .check{width:26px;height:26px;border-radius:8px;border:2px solid #cdbfc7;background:#fff;cursor:pointer;position:relative}
 .check:hover{border-color:#7e4cc4;background:#f3ecfc}.check:hover::after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#7e4cc4;font-weight:800}
-.more{width:30px;height:30px;border:0;background:none;border-radius:8px;cursor:pointer;font-size:18px;color:var(--muted)}.more:hover{background:#f1ecef}
+.more{width:30px;height:30px;border:0;background:none;border-radius:8px;cursor:pointer;font-size:18px;line-height:1;padding:0 0 6px;color:var(--muted);align-self:center}.more:hover{background:#f1ecef}
 .menu{display:flex;flex-direction:column;gap:6px}.menuitem{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 14px;font:inherit;cursor:pointer}.menuitem:hover{border-color:var(--wine);background:var(--wine-soft)}
 .sortsel{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:500;margin:0 8px 0 0}.sortsel select{padding:3px 6px;font-size:12px;width:auto;display:inline;margin:0}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:50}
@@ -129,7 +121,6 @@ details summary{cursor:pointer;margin-top:10px}
 .cell:hover{filter:brightness(.97)}
 .legend{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center}.legend .lg{display:inline-block;width:12px;height:12px;border-radius:4px;border:1px solid}
 .lg.st-done{background:#efe6fb;border-color:#d8c4f3}.lg.st-overdue{background:#fdecea;border-color:#f3b4ab}.lg.st-current{background:#fff;border-color:var(--wine)}.lg.st-future{background:#f6f4f5;border-color:#ebe6e9}
-.membergrid{grid-template-columns:1.8fr 1fr !important}
 .older{margin-bottom:8px}.older summary{font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:6px}.older .cells{margin-bottom:6px}b.red{color:var(--warn)}
 .verbar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.verbtn{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.verbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 </style>
@@ -388,15 +379,15 @@ function planOn(fan, date) {
   return h ? h.planId : null;
 }
 
-function eligibleSince(fan, planIds, asOf) {
-  const hs = fan.planHistory.filter(h => compare(h.start, asOf) <= 0);
-  let i = hs.length - 1;
-  if (i < 0 || !planIds.includes(hs[i].planId)) return null;
-  while (i > 0 && planIds.includes(hs[i - 1].planId) && hs[i - 1].end && addDays(hs[i - 1].end, 1) === hs[i].start) i--;
-  return hs[i].start;
-}
-
 // ---- obligations.js
+
+// 旧（〜11/30）か新（12/1〜）か：今日の日付で決める
+const isOld = (rule, today) => !!(rule && rule.before && compare(today, rule.before.until) <= 0);
+function tenureLabel(rule, planId, today) {
+  const labels = isOld(rule, today) ? rule.before.labelByPlan : rule.labelByPlan;
+  return (labels && labels[planId]) || rule.label;
+}
+const ruleVariants = (rule, today) => (!rule || isOld(rule, today) ? [] : rule.variants || []);
 
 function eligibleRuns(fan, planIds) {
   const runs = [];
@@ -437,7 +428,7 @@ function generate(data, today) {
       if (rule.kind === 'join') {
         for (const run of eligibleRuns(fan, rule.planIds)) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
       } else if (rule.kind === 'interval') {
-        for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.before && compare(today, rule.before.until) <= 0 ? rule.before.label : rule.label, due: t.due, periodStart: t.periodStart });
+        for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: isOld(rule, today) ? rule.before.label : rule.label, due: t.due, periodStart: t.periodStart });
       } else if (rule.kind === 'birthday') {
         if (!fan.birthday) continue;
         for (const run of eligibleRuns(fan, rule.planIds)) {
@@ -452,8 +443,8 @@ function generate(data, today) {
         if (!due) continue;
         const plan = planOn(fan, due);
         if (!plan || !rule.planIds.includes(plan)) continue;
-        const labels = rule.before && compare(today, rule.before.until) <= 0 ? rule.before.labelByPlan : rule.labelByPlan;
-        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, `${rule.months}か月継続：${(labels && labels[plan]) || rule.label}`);
+        const label = tenureLabel(rule, plan, today);
+        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, label.includes(`${rule.months}か月`) ? label : `${rule.months}か月継続：${label}`);
       }
     }
   }
@@ -1084,8 +1075,7 @@ function perksForPlan(settings, planId, date = null) {
     if (perks.length) inherited.push({ planId: p.id, perks });
   }
   const tenureRule = settings.rules.find(r => r.kind === 'tenure' && r.months === 12);
-  const labels = tenureRule && useOld && tenureRule.before ? tenureRule.before.labelByPlan : tenureRule && tenureRule.labelByPlan;
-  return { own: all[planId] || [], inherited, excluded, notes, old: useOld, tenure: tenureRule ? ((labels || {})[planId] || tenureRule.label) : '' };
+  return { own: all[planId] || [], inherited, excluded, notes, old: useOld, tenure: tenureRule ? tenureLabel(tenureRule, planId, useOld ? old.until : '9999-12-31') : '' };
 }
 
 // ---- ui.js
@@ -1104,6 +1094,7 @@ const ymd = d => (d ? d.replaceAll('-', '/') : '');
 const ctx = () => ({ device: storage.deviceName(), now: new Date().toISOString() });
 const fanName = id => (data.fans[id] ? data.fans[id].name : `#${id}`);
 const badge = planId => { const p = planById(data.settings, planId); return p ? `<span class="badge" style="--c:${PLAN_COLORS[planId] || '#667'}">${h(p.name.replace(/プラン$/, ''))}</span>` : ''; };
+const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
 const ruleOf = key => data.settings.rules.find(r => r.id === key.split('|')[0]);
 
 async function commit(next) {
@@ -1132,7 +1123,7 @@ async function deliverNow(it) {
   const next = deliver(data, it, { date: today, memo: '' }, ctx());
   const newId = Object.keys(next.records).find(k => !before.has(k));
   await commit(next);
-  toast(`${h(fanName(it.fanId))}さん：${h(it.title)} を渡した記録にしました`, () => commit(removeRecord(data, newId, ctx())));
+  toast(`${h(fanName(it.fanId))}さん：${h(it.title)} を「渡した」にしました`, () => commit(removeRecord(data, newId, ctx())));
 }
 async function undoCell(cell, item) {
   let next = data;
@@ -1281,9 +1272,9 @@ function render() {
 function csvBadge() {
   const last = latestCsvLog(data);
   if (!last) return '<span class="lastcsv warn">CSV未取込</span>';
-  const day = last.at.slice(0, 10) && new Date(last.at);
-  const local = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-  const ago = Math.round((Date.parse(today) - Date.parse(local)) / 86400000);
+  const at = new Date(last.at);
+  const local = `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}-${String(at.getDate()).padStart(2, '0')}`;
+  const ago = -daysTo(local);
   return `<span class="lastcsv ${ago > 35 ? 'warn' : ''}" title="${h(last.device)}で取込">最終取込 ${md(local)}（${ago === 0 ? '今日' : ago + '日前'}）</span>`;
 }
 
@@ -1291,7 +1282,7 @@ function renderPlans() {
   const plans = [...data.settings.plans].sort((a, b) => b.order - a.order);
   const old = data.settings.planPerksBefore;
   const ver = planVer || (old && today <= old.until ? 'old' : 'new');
-  const at = ver === 'old' && old ? old.until : (old ? '9999-12-31' : null);
+  const at = ver === 'old' && old ? old.until : null;   // null = 新の内容
   const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">管理中</span>' : ''}</li>`;
   const verBar = old ? `<div class="verbar"><button class="verbtn ${ver === 'old' ? 'on' : ''}" data-ver="old">〜${md(old.until)}（旧）</button><button class="verbtn ${ver === 'new' ? 'on' : ''}" data-ver="new">${md(addDays(old.until, 1))}〜（新）</button>
     <span class="muted small">${today <= old.until ? `今は旧の内容です。${md(addDays(old.until, 1))}から全員が新の内容になります。` : '今は新の内容です。'}</span></div>` : '';
@@ -1330,10 +1321,9 @@ function renderDashboard(list) {
   const milestones = [];
   for (const f of active) for (const r of data.settings.rules.filter(r => r.kind === 'tenure')) {
     const d = reachDate(f, r.months);
-    if (d && compare(d, today) >= 0 && compare(d, soon) <= 0) milestones.push({ f, months: r.months, d, label: (r.labelByPlan || {})[planOn(f, d)] || r.label });
+    if (d && compare(d, today) >= 0 && compare(d, soon) <= 0) milestones.push({ f, months: r.months, d, label: tenureLabel(r, planOn(f, d), today) });
   }
   milestones.sort((a, b) => compare(a.d, b.d));
-  const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
   const recent = addMonths(today, -1);
   const newcomers = fans.filter(f => f.status !== 'left' && compare(f.periods.at(-1).start, recent) >= 0);
   const candidates = fans.filter(f => f.status === 'leftCandidate');
@@ -1356,7 +1346,7 @@ function renderDashboard(list) {
 }
 
 function renderList(list) {
-  const head = `<div class="listhead"><h2>渡すものリスト</h2>${list.items.length ? `<div class="controls">
+  const head = `<div class="listhead">${list.items.length ? `<div class="controls">
     <span class="ctl-label">種類</span><button class="kindchip ${listKind === 'all' ? 'on' : ''}" data-kind="all">すべて ${list.items.length}</button>${Object.entries(KIND_META).map(([k, m]) => { const n = list.items.filter(i => i.kind === k).length; return n ? `<button class="kindchip ${listKind === k ? 'on' : ''}" data-kind="${k}" style="--k:${m.color}">${m.icon}${m.label} ${n}</button>` : ''; }).join('')}
   </div>` : ''}</div>${list.items.length ? `<div class="controls planrow"><label class="sortsel">並べ替え <select id="listSort">${[['due', '期限順'], ['name', '名前順'], ['kind', '種類順']].map(([k, l]) => `<option value="${k}" ${listSort === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label><span class="ctl-label">プラン</span><button class="planchip ${listPlan === 'all' ? 'on' : ''}" data-plan="all">すべて</button>${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => { const n = list.items.filter(i => itemPlan(i) === p.id).length; return n ? `<button class="planchip ${listPlan === p.id ? 'on' : ''}" data-plan="${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">${h(p.name.replace(/プラン$/, ''))} ${n}</button>` : ''; }).join('')}</div>` : ''}`;
   if (!list.items.length) return head + `<div class="empty">今月・来月に渡すものはありません 🎉</div>`;
@@ -1437,7 +1427,6 @@ function renderRosterTable() {
   }), fanSort.key, fanSort.dir);
   const cols = [['memberNo', 'No', 'num'], ['name', '名前', ''], ['plan', 'プラン', ''], ['status', '状態', ''], ['months', '在籍', 'r'], ['next', '次の継続特典', ''], ['birthday', '誕生日', '']];
   const arrow = k => (fanSort.key === k ? (fanSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
-  const daysTo = d => Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
   const body = rows.map(({ f, planId, months, next }) => `<tr data-plan="${h(planId)}"><td class="num">${h(f.memberNo)}</td>
       <td class="nm"><span class="dot" style="background:${PLAN_COLORS[planId] || '#999'}"></span><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
       <td><span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></td><td class="r">${months}か月</td>
@@ -1526,15 +1515,14 @@ function wireTab() {
     openDialog('記録を修正', `<label>渡した日<input type="date" name="date" value="${h(r.date || '')}"></label><label>メモ<input name="memo" value="${h(r.memo || '')}"></label>`,
       { ok: '保存', onOk: dl => commit(editRecord(data, r.id, { date: dl.querySelector('[name=date]').value, memo: dl.querySelector('[name=memo]').value }, ctx())) });
   });
-  document.querySelectorAll('.delrec').forEach(b => b.onclick = () => openDialog('記録を削除', `<p>この記録を削除すると、渡すものリストに戻ります。</p>`,
+  document.querySelectorAll('.delrec').forEach(b => b.onclick = () => openDialog('記録を削除', `<p>この記録を削除すると、「渡すもの」リストに戻ります。</p>`,
     { ok: '削除', danger: true, onOk: () => commit(removeRecord(data, b.dataset.id, ctx())) }));
 }
 
 const touchFan = (d, id) => { d.fans[id].updatedAt = new Date().toISOString(); return d; };
 
 function openDeliver(it) {
-  const rule = ruleOf(it.key) || {};
-  const variants = (rule.variants || []).map((v, n) => `<label class="inline"><input type="radio" name="variant" value="${h(v)}" ${n === 0 ? 'checked' : ''}> ${h(v)}</label>`).join('');
+  const variants = ruleVariants(ruleOf(it.key), today).map((v, n) => `<label class="inline"><input type="radio" name="variant" value="${h(v)}" ${n === 0 ? 'checked' : ''}> ${h(v)}</label>`).join('');
   openDialog('渡した', `<p><b>${h(fanName(it.fanId))}</b>さん：${h(it.title)}${it.count > 1 ? `（${it.count}回分をまとめて）` : ''}</p>
     ${variants ? `<div class="field">内容 ${variants}</div>` : ''}
     <label>渡した日<input type="date" name="date" value="${today}" required></label>
