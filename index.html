@@ -131,6 +131,7 @@ details summary{cursor:pointer;margin-top:10px}
 .lg.st-done{background:#efe6fb;border-color:#d8c4f3}.lg.st-overdue{background:#fdecea;border-color:#f3b4ab}.lg.st-current{background:#fff;border-color:var(--wine)}.lg.st-future{background:#f6f4f5;border-color:#ebe6e9}
 .membergrid{grid-template-columns:1.8fr 1fr !important}
 .older{margin-bottom:8px}.older summary{font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:6px}.older .cells{margin-bottom:6px}b.red{color:var(--warn)}
+.verbar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.verbtn{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.verbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -186,6 +187,19 @@ const PLAN_DEFS = [
   ['toriko', '虜プラン', 500], ['keiai', '敬愛プラン', 3000], ['suuhai', '崇拝プラン', 5000],
   ['ketsuniku', '血肉プラン', 10000], ['kyoai', '狂愛プラン', 30000],
 ];
+const OLD_RULES_UNTIL = '2026-11-30';   // 11月までは旧の特典内容、12/1から新
+
+function oldPlanPerks() {
+  return {
+    toriko: [{ name: '最新情報や先行公開（不定期）' }, { name: '気まぐれブログ（不定期）' }, { name: 'Discordサーバーご招待', rule: 'discord' }, { name: '月1FCルーレット配信（激レア特典もらえる）' }, { name: 'FC限定グッズショップ' }, { name: '限定配信（不定期）' }],
+    keiai: [{ name: '日常ボイスや落書き（不定期）' }, { name: 'プチ漫画投稿（不定期）' }, { name: 'くれあと加入者全員で通話交流会（不定期）' }],
+    suuhai: [{ name: '季節や行事ごとシチュエーションボイス' }, { name: 'FC限定グッズショップの300円値引き' }],
+    ketsuniku: [{ name: '1on1通話券（10分・3か月に1回）', rule: 'call-ketsuniku', noInherit: true }, { name: 'ディスコ個人チャット（返信不定期）' }, { name: '鍵垢Xの公開（不定期）', rule: 'kagiaka' }, { name: 'お誕生日ビデオレター', rule: 'birthday' }],
+    kyoai: [{ name: '1on1通話券（1時間・月1回）', rule: 'call-kyoai' }],
+  };
+}
+const OLD_TENURE = { toriko: 'シンプル可愛い壁紙プレゼント', keiai: 'デジタル特典', suuhai: 'シチュエーション動画', ketsuniku: 'フィジカルグッズ', kyoai: 'フィジカルグッズ＋私物' };
+
 function defaultPlanPerks() {
   return {
     toriko: [{ name: '最新情報＆ブログ' }, { name: 'FCサーバー招待（Discord）', rule: 'discord' }, { name: '特典ルーレット（豪華特典）' }, { name: 'ネップリ' }, { name: 'FC限定ショップ' }],
@@ -205,15 +219,17 @@ function defaultSettings() {
     rules: [
       { id: 'discord', kind: 'join', planIds: all, label: 'FCサーバー招待' },
       { id: 'kagiaka', kind: 'join', planIds: ['ketsuniku', 'kyoai'], label: '鍵垢X公開' },
-      { id: 'call-ketsuniku', kind: 'interval', planIds: ['ketsuniku'], months: 3, label: '10分通話 or 名前呼びシチュボ', variants: ['通話', 'シチュボ'] },
-      { id: 'call-kyoai', kind: 'interval', planIds: ['kyoai'], months: 1, label: '1時間通話券' },
-      { id: 'situvo-kyoai', kind: 'interval', planIds: ['kyoai'], months: 3, label: '名前呼びシチュボ（3か月に1回）', icon: '🎤' },
+      { id: 'call-ketsuniku', kind: 'interval', planIds: ['ketsuniku'], months: 3, label: '10分通話 or 名前呼びシチュボ', variants: ['通話', 'シチュボ'], before: { until: OLD_RULES_UNTIL, label: '1on1通話券（10分）' } },
+      { id: 'call-kyoai', kind: 'interval', planIds: ['kyoai'], months: 1, label: '1時間通話券', before: { until: OLD_RULES_UNTIL, label: '1on1通話券（1時間）' } },
+      { id: 'situvo-kyoai', kind: 'interval', planIds: ['kyoai'], months: 3, label: '名前呼びシチュボ（3か月に1回）', icon: '🎤', startsOn: '2026-12-01' },
       { id: 'birthday', kind: 'birthday', planIds: ['ketsuniku', 'kyoai'], label: 'お誕生日ビデオレター' },
       { id: 'tenure-12', kind: 'tenure', planIds: all, months: 12, label: '12か月継続特典',
-        labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' } },
+        labelByPlan: { toriko: 'デジタル特典', keiai: 'ステッカー特典', suuhai: 'チャーム特典', ketsuniku: 'フィジカルグッズ特典', kyoai: 'フィジカルグッズ＆私物特典' },
+        before: { until: OLD_RULES_UNTIL, labelByPlan: OLD_TENURE } },
     ],
     planPerks: defaultPlanPerks(),
-    rulesVersion: 2,
+    planPerksBefore: { until: OLD_RULES_UNTIL, perks: oldPlanPerks() },
+    rulesVersion: 3,
     updatedAt: '1970-01-01T00:00:00.000Z',
   };
 }
@@ -226,8 +242,26 @@ const planByName = (s, name) => s.plans.find(p => p.name === String(name).trim()
 // 以前に保存された設定を新しい既定に合わせる（1回だけ）。ユーザーが消したルールは戻さない。
 function upgradeSettings(data, today, now) {
   const st = data.settings || {};
-  if ((st.rulesVersion || 1) >= 2) return data;
+  if ((st.rulesVersion || 1) >= 3) return data;
   const next = JSON.parse(JSON.stringify(data));
+  if ((st.rulesVersion || 1) < 2) upgradeTo2(next, today);
+  upgradeTo3(next);
+  next.settings.rulesVersion = 3;
+  next.settings.updatedAt = now;
+  return next;
+}
+
+function upgradeTo3(next) {
+  const defs = defaultSettings().rules;
+  for (const r of next.settings.rules) {
+    const def = defs.find(x => x.id === r.id);
+    if (def && def.before && !r.before) r.before = def.before;
+    if (r.id === 'situvo-kyoai' && (!r.startsOn || r.startsOn < '2026-12-01')) r.startsOn = '2026-12-01';
+  }
+  if (!next.settings.planPerksBefore) next.settings.planPerksBefore = { until: OLD_RULES_UNTIL, perks: oldPlanPerks() };
+}
+
+function upgradeTo2(next, today) {
   if (!next.settings.rules.some(r => r.id === 'situvo-kyoai')) {
     const def = defaultSettings().rules.find(r => r.id === 'situvo-kyoai');
     const at = next.settings.rules.findIndex(r => r.id === 'call-kyoai');
@@ -238,9 +272,6 @@ function upgradeSettings(data, today, now) {
     const def = defaultPlanPerks().ketsuniku[0];
     if (call) { delete call.noInherit; call.inheritAs = def.inheritAs; call.inheritNote = def.inheritNote; }
   }
-  next.settings.rulesVersion = 2;
-  next.settings.updatedAt = now;
-  return next;
 }
 
 // ---- csv.js
@@ -406,7 +437,7 @@ function generate(data, today) {
       if (rule.kind === 'join') {
         for (const run of eligibleRuns(fan, rule.planIds)) push(`${rule.id}|${fan.memberNo}|${run.start}`, run.start, rule.label);
       } else if (rule.kind === 'interval') {
-        for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.label, due: t.due, periodStart: t.periodStart });
+        for (const t of intervalTickets(fan, rule, horizon)) if (!rule.startsOn || compare(t.due, rule.startsOn) >= 0) items.push({ ...base, key: t.key, ruleId: rule.id, kind: rule.kind, title: rule.before && compare(today, rule.before.until) <= 0 ? rule.before.label : rule.label, due: t.due, periodStart: t.periodStart });
       } else if (rule.kind === 'birthday') {
         if (!fan.birthday) continue;
         for (const run of eligibleRuns(fan, rule.planIds)) {
@@ -421,7 +452,8 @@ function generate(data, today) {
         if (!due) continue;
         const plan = planOn(fan, due);
         if (!plan || !rule.planIds.includes(plan)) continue;
-        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, `${rule.months}か月継続：${(rule.labelByPlan && rule.labelByPlan[plan]) || rule.label}`);
+        const labels = rule.before && compare(today, rule.before.until) <= 0 ? rule.before.labelByPlan : rule.labelByPlan;
+        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, `${rule.months}か月継続：${(labels && labels[plan]) || rule.label}`);
       }
     }
   }
@@ -1036,8 +1068,10 @@ function sortFanRows(rows, key, dir) {
 // ---- plan-perks.js
 
 // そのプランが受けられる特典：自分のプランの特典＋下位プランの特典（上位に引き継がないものは除く）
-function perksForPlan(settings, planId) {
-  const all = settings.planPerks || defaultPlanPerks();
+function perksForPlan(settings, planId, date = null) {
+  const old = settings.planPerksBefore;
+  const useOld = !!(date && old && date <= old.until);
+  const all = useOld ? old.perks : (settings.planPerks || defaultPlanPerks());
   const plans = [...settings.plans].sort((a, b) => a.order - b.order);
   const me = plans.find(p => p.id === planId);
   if (!me) return { own: [], inherited: [], excluded: [], notes: [], tenure: '' };
@@ -1050,7 +1084,8 @@ function perksForPlan(settings, planId) {
     if (perks.length) inherited.push({ planId: p.id, perks });
   }
   const tenureRule = settings.rules.find(r => r.kind === 'tenure' && r.months === 12);
-  return { own: all[planId] || [], inherited, excluded, notes, tenure: tenureRule ? ((tenureRule.labelByPlan || {})[planId] || tenureRule.label) : '' };
+  const labels = tenureRule && useOld && tenureRule.before ? tenureRule.before.labelByPlan : tenureRule && tenureRule.labelByPlan;
+  return { own: all[planId] || [], inherited, excluded, notes, old: useOld, tenure: tenureRule ? ((labels || {})[planId] || tenureRule.label) : '' };
 }
 
 // ---- ui.js
@@ -1060,7 +1095,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
+let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', planVer = null, fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1254,10 +1289,15 @@ function csvBadge() {
 
 function renderPlans() {
   const plans = [...data.settings.plans].sort((a, b) => b.order - a.order);
+  const old = data.settings.planPerksBefore;
+  const ver = planVer || (old && today <= old.until ? 'old' : 'new');
+  const at = ver === 'old' && old ? old.until : (old ? '9999-12-31' : null);
   const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">管理中</span>' : ''}</li>`;
-  return `<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「管理中」の特典は、渡すものリストで期限を管理しています。</p>
+  const verBar = old ? `<div class="verbar"><button class="verbtn ${ver === 'old' ? 'on' : ''}" data-ver="old">〜${md(old.until)}（旧）</button><button class="verbtn ${ver === 'new' ? 'on' : ''}" data-ver="new">${md(addDays(old.until, 1))}〜（新）</button>
+    <span class="muted small">${today <= old.until ? `今は旧の内容です。${md(addDays(old.until, 1))}から全員が新の内容になります。` : '今は新の内容です。'}</span></div>` : '';
+  return `${verBar}<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「管理中」の特典は、渡すものリストで期限を管理しています。</p>
     <div class="plangrid">${plans.map(p => {
-      const x = perksForPlan(data.settings, p.id);
+      const x = perksForPlan(data.settings, p.id, at);
       const pn = id => h((planById(data.settings, id) || {}).name || id);
       return `<section class="panel plancard" id="plan-${p.id}" style="--c:${PLAN_COLORS[p.id] || '#777'}">
         <div class="pc-head"><b>${h(p.name)}</b><span>${yen(p.price)}/月</span></div>
@@ -1450,6 +1490,7 @@ function wire(list) {
   document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
   const ls = $('#listSort'); if (ls) ls.onchange = () => { listSort = ls.value; render(); };
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
+  document.querySelectorAll('.verbtn').forEach(b => b.onclick = () => { planVer = b.dataset.ver; render(); });
   document.querySelectorAll('#list .planchip').forEach(b => b.onclick = () => { listPlan = b.dataset.plan; render(); });
   const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items : [];
   const byKey = Object.fromEntries([...list.items, ...extraItems].map(i => [i.key, i]));
@@ -1572,7 +1613,7 @@ function renderMember() {
         <section class="panel"><h2>📝 メモ</h2>
           <textarea id="memo" rows="7" placeholder="好きなもの、配送の注意、話した内容など">${h(f.memo || '')}</textarea>
           <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="muted small" id="memoState"></span><button class="btn small primary" id="saveMemo">保存</button></div></section>
-        <section class="panel"><h2>📋 受けられる特典</h2>${(() => { const x = perksForPlan(data.settings, plan); const names = [...x.own, ...x.inherited.flatMap(g => g.perks)].map(p => h(p.name)); return `<ul class="plain small">${names.map(n => `<li>${n}</li>`).join('')}</ul><p class="small">🎁 12か月継続：<b>${h(x.tenure)}</b></p><button class="link small" data-goto="plans">プラン特典の一覧へ →</button>`; })()}</section>
+        <section class="panel"><h2>📋 受けられる特典</h2>${(() => { const x = perksForPlan(data.settings, plan, today); const names = [...x.own, ...x.inherited.flatMap(g => g.perks)].map(p => h(p.name)); return `<ul class="plain small">${names.map(n => `<li>${n}</li>`).join('')}</ul><p class="small">🎁 12か月継続：<b>${h(x.tenure)}</b></p><button class="link small" data-goto="plans">プラン特典の一覧へ →</button>`; })()}</section>
         <section class="panel"><h2>📈 プランの変遷</h2><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
           <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></section>
       </div>
@@ -1670,7 +1711,7 @@ function renderSettings() {
     <section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
       <table><tbody>${rules}</tbody></table></section>
     <section class="panel"><div class="secthead"><h2>プラン特典の中身</h2><button type="button" class="btn small primary" id="savePerks">保存</button></div>
-      <p class="muted small">「上位にも」のチェックを外すと、上のプランには引き継がれません（例：血肉の10分通話）。</p>
+      <p class="muted small">ここで編集するのは12月からの新しい内容です。「上位にも」のチェックを外すと、上のプランには引き継がれません。</p>
       ${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => `<div class="perkplan" data-plan="${p.id}"><h4>${badge(p.id)} ${h(p.name)}</h4>
         ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? '<span class="tracked">管理中</span>' : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
         <button type="button" class="link small addperk">＋特典を追加</button></div>`).join('')}</section>
