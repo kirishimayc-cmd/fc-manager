@@ -496,8 +496,15 @@ function generate(data, today) {
         if (!due) continue;
         const plan = planOn(fan, due);
         if (!plan || !rule.planIds.includes(plan)) continue;
-        const label = tenureLabel(rule, plan, today, data.settings.plans);
-        push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, label.includes(`${rule.months}か月`) ? label : `${rule.months}か月継続：${label}`);
+        // 自分のプランの分＋下位プランの分を、1つずつ別の行で出す（上位プランは下位の特典も受け取る）
+        const plans = data.settings.plans, me = plans.find(p => p.id === plan);
+        const lower = me ? [...plans].filter(p => p.order < me.order && rule.planIds.includes(p.id)).sort((a, b) => b.order - a.order) : [];
+        for (const [p, key] of [[plan, `${rule.id}|${fan.memberNo}|${rule.months}`], ...lower.map(p => [p.id, `${rule.id}|${fan.memberNo}|${rule.months}|${p.id}`])]) {
+          const label = tenureLabel(rule, p, today);
+          if (p !== plan && !(rule.labelByPlan && rule.labelByPlan[p])) continue;
+          items.push({ ...base, key, ruleId: rule.id, kind: rule.kind, perkPlan: p, due,
+            title: label.includes(`${rule.months}か月`) ? label : `${rule.months}か月継続：${label}` });
+        }
       }
     }
   }
@@ -617,7 +624,7 @@ function fanPerkGrid(data, fanId, today) {
       const due = s && s.scheduledDate ? s.scheduledDate : c.due;
       const by = settledBy.get(c.key) || [];
       const label = row.kind === 'interval' ? (row.months === 1 ? c.periodStart.slice(0, 7) : c.periodStart.slice(0, 7) + '〜')
-        : row.kind === 'tenure' ? c.key.split('|')[2] + 'か月' : row.kind === 'birthday' ? c.key.split('|')[2]
+        : row.kind === 'tenure' ? c.key.split('|')[2] + 'か月' + (c.key.split('|')[3] ? '・' + ((data.settings.plans.find(p => p.id === c.key.split('|')[3]) || {}).name || '').replace(/プラン$/, '') : '') : row.kind === 'birthday' ? c.key.split('|')[2]
         : row.kind === 'extra' ? c.title : c.title;
       let state;
       if (by.some(r => r.type !== 'dismissed')) state = 'done';
@@ -1505,7 +1512,7 @@ function itemRow(i) {
     <button class="check" title="渡した（押すだけで記録）" aria-label="渡した"></button>
     <div class="due">${i.scheduled ? '<small>予定</small>' : ''}${md(i.due)}</div>
     <div class="who"><button class="link fanlink namelink" data-id="${h(i.fanId)}">${h(f.name || i.fanId)}</button> ${badge(plan)}</div>
-    <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${h(i.title)} ${tags}</div>
+    <div class="what"><span class="kindtag" style="--k:${meta.color}">${meta.icon}</span>${i.perkPlan && i.perkPlan !== plan ? badge(i.perkPlan) + ' ' : ''}${h(i.title)} ${tags}</div>
     <button class="more" title="ほかの操作">…</button></div>`;
 }
 
@@ -1580,6 +1587,7 @@ function perkTag(r) {
   const f = data.fans[r.fanId];
   if (r.key.startsWith('extra|')) return '<span class="tag">個別</span>';
   const rule = ruleOf(r.key);
+  if (rule && rule.kind === 'tenure' && r.key.split('|')[3]) return badge(r.key.split('|')[3]);
   if (rule && rule.kind === 'tenure' && f) { const d = reachDate(f, rule.months); return badge((d && planOn(f, d)) || curPlanOf(f)); }
   return badge((rule && perkOriginPlan(data.settings, rule.id)) || (f && curPlanOf(f)));
 }
