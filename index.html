@@ -429,9 +429,15 @@ function planOn(fan, date) {
 
 // 旧（〜11/30）か新（12/1〜）か：今日の日付で決める
 const isOld = (rule, today) => !!(rule && rule.before && compare(today, rule.before.until) <= 0);
-function tenureLabel(rule, planId, today) {
+// 上位プランは下位プランの継続特典も受け取る：「自分の特典（＋下位の特典・…）」
+function tenureLabel(rule, planId, today, plans = null) {
   const labels = isOld(rule, today) ? rule.before.labelByPlan : rule.labelByPlan;
-  return (labels && labels[planId]) || rule.label;
+  const own = (labels && labels[planId]) || rule.label;
+  const me = plans && plans.find(p => p.id === planId);
+  if (!me || !labels) return own;
+  const lower = [...plans].filter(p => p.order < me.order && rule.planIds.includes(p.id)).sort((a, b) => b.order - a.order)
+    .map(p => labels[p.id]).filter((l, i, a) => l && l !== own && a.indexOf(l) === i);
+  return lower.length ? `${own}（＋${lower.join('・')}）` : own;
 }
 const ruleVariants = (rule, today) => (!rule || isOld(rule, today) ? [] : rule.variants || []);
 
@@ -490,7 +496,7 @@ function generate(data, today) {
         if (!due) continue;
         const plan = planOn(fan, due);
         if (!plan || !rule.planIds.includes(plan)) continue;
-        const label = tenureLabel(rule, plan, today);
+        const label = tenureLabel(rule, plan, today, data.settings.plans);
         push(`${rule.id}|${fan.memberNo}|${rule.months}`, due, label.includes(`${rule.months}か月`) ? label : `${rule.months}か月継続：${label}`);
       }
     }
@@ -1149,7 +1155,7 @@ function perksForPlan(settings, planId, date = null) {
     if (perks.length) inherited.push({ planId: p.id, perks });
   }
   const tenureRule = settings.rules.find(r => r.kind === 'tenure' && r.months === 12);
-  return { own: all[planId] || [], inherited, excluded, notes, old: useOld, tenure: tenureRule ? tenureLabel(tenureRule, planId, useOld ? old.until : '9999-12-31') : '' };
+  return { own: all[planId] || [], inherited, excluded, notes, old: useOld, tenure: tenureRule ? tenureLabel(tenureRule, planId, useOld ? old.until : '9999-12-31', settings.plans) : '' };
 }
 
 // その特典が「どのプランの特典か」：特典一覧でその特典を載せている一番下のプラン
@@ -1410,7 +1416,7 @@ function renderDashboard(list) {
   const milestones = [];
   for (const f of active) for (const r of data.settings.rules.filter(r => r.kind === 'tenure')) {
     const d = reachDate(f, r.months);
-    if (d && compare(d, today) >= 0 && compare(d, soon) <= 0) milestones.push({ f, months: r.months, d, label: tenureLabel(r, planOn(f, d), today) });
+    if (d && compare(d, today) >= 0 && compare(d, soon) <= 0) milestones.push({ f, months: r.months, d, label: tenureLabel(r, planOn(f, d), today, data.settings.plans) });
   }
   milestones.sort((a, b) => compare(a.d, b.d));
   const recent = addMonths(today, -1);
