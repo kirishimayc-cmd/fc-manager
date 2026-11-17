@@ -42,8 +42,8 @@ label.inline-wide{display:grid;grid-template-columns:110px 1fr;align-items:cente
 .listhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:4px}.listhead h2{margin:0}
 .controls{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.ctl-label{font-size:11px;color:var(--muted);margin:0 2px 0 8px}
 .kindchip{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
-.kindchip.on{background:var(--k,var(--wine));color:#fff;border-color:var(--k,var(--wine))}
-.kindtag{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;margin-right:8px;background:color-mix(in srgb,var(--k) 13%,#fff);font-size:13px;vertical-align:middle}
+.kindchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.kindtag{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;margin-right:8px;background:#f3eef1;font-size:13px;vertical-align:middle}
 .what{line-height:1.45}.group.overdue .item{background:#fff8f7}.group.overdue .item:nth-child(even){background:#fdf1ef}
 table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.fans th.sortable:hover{color:var(--wine)}table.fans tbody tr:hover{background:#fdf6f8}table.fans td{padding:9px 8px}
 .st{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}.st-active{background:#e9f6ee;color:#1e7a43}.st-leftCandidate{background:#fff1d6;color:#8a5a00}.st-left{background:#eee;color:#666}
@@ -66,23 +66,23 @@ table.fans th.sortable{cursor:pointer;user-select:none;white-space:nowrap}table.
 .more{text-align:right;margin:6px 4px 0}
 ul.dl{list-style:none;margin:0;padding:0}ul.dl li{padding:8px 0;border-bottom:1px solid #f3eff2}.when{display:inline-block;min-width:68px;font-weight:700;color:var(--wine)}
 .names{line-height:1.9;margin:4px 0 8px}
-.bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px}.bar b{text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}.bar{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px}.bt{background:#f3eef1;border-radius:6px;height:14px;overflow:hidden}.bt i{display:block;height:100%;border-radius:6px;background:var(--wine)}.bar b{text-align:right}
 @media(max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.side nav{flex-direction:row;flex-wrap:wrap}.nav{width:auto}.sidefoot{display:none}.kpis{grid-template-columns:1fr 1fr}.dashgrid{grid-template-columns:1fr}}
 
 .rosterbar{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}.rosterrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.rosterrow .chips{margin:0}
 #rosterSearch{width:240px;font-size:14px}
-.planchip{border:1px solid color-mix(in srgb,var(--c,#888) 35%,#fff);background:#fff;color:var(--c,var(--ink));border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
-.planchip.on{background:var(--c,var(--ink));color:#fff;border-color:var(--c,var(--ink))}
+.planchip{border:1px solid #ddd5db;background:#fff;color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.planchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .rostercount{margin:8px 2px}
 table.roster{font-size:14.5px}table.roster th{font-size:12.5px}table.roster td{padding:12px 10px}
 table.roster td.nm{font-size:16px;font-weight:700;white-space:nowrap}table.roster td.nm .link{color:var(--ink);text-decoration:none}table.roster td.nm .link:hover{color:var(--wine);text-decoration:underline}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:9px;vertical-align:1px}
+
 .scroll.tall{max-height:calc(100vh - 260px)}
 
 #backToRoster{margin-bottom:10px;display:inline-block}
 .memberhead .mh-name{font-size:24px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .memberhead .mh-facts{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:8px;color:var(--muted);font-size:13px}.memberhead .mh-facts b{color:var(--ink);font-size:15px}
-.dot.big{width:16px;height:16px;margin-right:2px}
+
 .membergrid{display:grid;grid-template-columns:1.8fr 1fr;gap:12px;align-items:start}.mcol .panel{margin-bottom:12px}
 #memo{width:100%;font:inherit;font-size:14px;padding:10px;border:1px solid #d8d0d6;border-radius:8px;resize:vertical}
 details summary{cursor:pointer;margin-top:10px}
@@ -90,7 +90,7 @@ details summary{cursor:pointer;margin-top:10px}
 
 .lastcsv{font-size:12px;color:var(--muted);margin-right:6px;align-self:center}.lastcsv.warn{color:var(--warn);font-weight:700}
 .plangrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.plangrid .panel{margin:0}
-.plancard{border-top:5px solid var(--c)}.pc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.pc-head b{font-size:18px;color:var(--c)}.pc-head span{color:var(--muted);font-weight:700}
+.plancard{border-top:4px solid var(--line)}.pc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}.pc-head b{font-size:18px;color:var(--ink)}.pc-head span{color:var(--muted);font-weight:700}
 .plancard h4{margin:12px 0 4px;font-size:13px;color:var(--muted)}.plancard ul.plain{line-height:1.75}
 .tracked{display:inline-block;font-size:10px;font-weight:700;background:#eef3fb;color:#2f5aa0;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .excl{color:#8a5a00;background:#fff8e6;border-radius:8px;padding:6px 8px;margin-top:10px}.pc-tenure{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px}
@@ -123,6 +123,10 @@ details summary{cursor:pointer;margin-top:10px}
 .lg.st-done{background:#efe6fb;border-color:#d8c4f3}.lg.st-overdue{background:#fdecea;border-color:#f3b4ab}.lg.st-current{background:#fff;border-color:var(--wine)}.lg.st-future{background:#f6f4f5;border-color:#ebe6e9}
 .older{margin-bottom:8px}.older summary{font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:6px}.older .cells{margin-bottom:6px}b.red{color:var(--warn)}
 .verbar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.verbtn{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.verbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.settabs{display:flex;gap:6px;margin-bottom:12px}.settab{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:6px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.settab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.more-details{padding:0}.more-details>summary{padding:14px 16px;cursor:pointer;font-weight:700;font-size:14px}.more-details[open]>summary{border-bottom:1px solid var(--line)}.more-details .sub{padding:12px 16px;border-bottom:1px solid #f3eff2}.more-details .sub:last-child{border-bottom:0}
+.cell{position:relative}.cellmenu{position:absolute;top:3px;right:7px;display:none;font-size:15px;line-height:1;padding:2px 4px;border-radius:6px;color:inherit}.cell:hover .cellmenu{display:block}.cellmenu:hover{background:#0000000f}
 </style>
 </head>
 <body>
@@ -1085,7 +1089,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', planVer = null, fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
+let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', planVer = null, setTab = 'basic', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1283,10 +1287,10 @@ function renderPlans() {
   const old = data.settings.planPerksBefore;
   const ver = planVer || (old && today <= old.until ? 'old' : 'new');
   const at = ver === 'old' && old ? old.until : null;   // null = 新の内容
-  const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">管理中</span>' : ''}</li>`;
+  const perk = x => `<li>${h(x.name)}${x.rule ? ' <span class="tracked">リストで管理</span>' : ''}</li>`;
   const verBar = old ? `<div class="verbar"><button class="verbtn ${ver === 'old' ? 'on' : ''}" data-ver="old">〜${md(old.until)}（旧）</button><button class="verbtn ${ver === 'new' ? 'on' : ''}" data-ver="new">${md(addDays(old.until, 1))}〜（新）</button>
     <span class="muted small">${today <= old.until ? `今は旧の内容です。${md(addDays(old.until, 1))}から全員が新の内容になります。` : '今は新の内容です。'}</span></div>` : '';
-  return `${verBar}<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「管理中」の特典は、渡すものリストで期限を管理しています。</p>
+  return `${verBar}<p class="muted small">上位プランは、下位プランの特典もすべて受けられます（例外は「対象外」と書いたもの）。「リストで管理」の特典は、「渡すもの」で期限を管理しています。</p>
     <div class="plangrid">${plans.map(p => {
       const x = perksForPlan(data.settings, p.id, at);
       const pn = id => h((planById(data.settings, id) || {}).name || id);
@@ -1302,7 +1306,7 @@ function renderPlans() {
 
 function renderPage(list) {
   if (page === 'plans') return renderPlans();
-  if (page === 'perks') return `<section id="list" class="panel">${renderList(list)}</section>${renderNotices(list.notices)}`;
+  if (page === 'perks') return `<section id="list" class="panel">${renderList(list)}</section>`;
   if (page === 'members') return `<section class="panel"><div id="tabContent">${renderFans()}</div></section>`;
   if (page === 'records') return `<section class="panel"><div id="tabContent">${renderRecords()}</div></section>`;
   if (page === 'revenue') return `<section class="panel"><div id="tabContent">${renderRevenue()}</div></section>`;
@@ -1341,7 +1345,7 @@ function renderDashboard(list) {
       <section class="panel"><h2>👥 新規・退会候補</h2>
         <h4>新規（1か月以内） ${newcomers.length}人</h4>${newcomers.length ? `<p class="names">${newcomers.map(who).join('、')}</p>` : '<p class="muted small">なし</p>'}
         <h4>退会候補 ${candidates.length}人</h4>${candidates.length ? `<p class="names">${candidates.map(who).join('、')}</p><button class="link small" data-goto="members">会員名簿で確認する →</button>` : '<p class="muted small">なし</p>'}</section>
-      <section class="panel span2"><h2>📊 プラン別の人数（在籍）</h2><div class="bars">${planRows.map(({ p, n }) => `<div class="bar"><span class="bl">${badge(p.id)}</span><span class="bt"><i style="width:${(n / maxN) * 100}%;background:${PLAN_COLORS[p.id] || '#999'}"></i></span><b>${n}人</b></div>`).join('')}</div></section>
+      <section class="panel span2"><h2>📊 プラン別の人数（在籍）</h2><div class="bars">${planRows.map(({ p, n }) => `<div class="bar"><span class="bl">${badge(p.id)}</span><span class="bt"><i style="width:${(n / maxN) * 100}%"></i></span><b>${n}人</b></div>`).join('')}</div></section>
     </div>`;
 }
 
@@ -1428,7 +1432,7 @@ function renderRosterTable() {
   const cols = [['memberNo', 'No', 'num'], ['name', '名前', ''], ['plan', 'プラン', ''], ['status', '状態', ''], ['months', '在籍', 'r'], ['next', '次の継続特典', ''], ['birthday', '誕生日', '']];
   const arrow = k => (fanSort.key === k ? (fanSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
   const body = rows.map(({ f, planId, months, next }) => `<tr data-plan="${h(planId)}"><td class="num">${h(f.memberNo)}</td>
-      <td class="nm"><span class="dot" style="background:${PLAN_COLORS[planId] || '#999'}"></span><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
+      <td class="nm"><button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button></td><td>${badge(planId)}</td>
       <td><span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></td><td class="r">${months}か月</td>
       <td>${next ? `<b>あと${daysTo(next)}日</b> <span class="muted">（${ymd(next)}）</span>` : '<span class="muted">-</span>'}</td><td>${f.birthday ? f.birthday.replace('-', '/') : '<span class="muted">-</span>'}</td>
       <td>${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</td></tr>`).join('');
@@ -1567,20 +1571,20 @@ function renderMember() {
   return `<div id="memberPage">
     <button class="link" id="backToRoster">← 会員名簿に戻る</button>
     <section class="panel memberhead">
-      <div class="mh-name"><span class="dot big" style="background:${PLAN_COLORS[plan] || '#999'}"></span>${h(f.name)} ${badge(plan)} <span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></div>
+      <div class="mh-name">${h(f.name)} ${badge(plan)} <span class="st st-${f.status}">${STATUS_LABEL[f.status]}</span></div>
       <div class="mh-facts"><span>在籍 <b>${tenureMonths(f)}か月</b></span><span>会員番号 <b>${h(f.memberNo)}</b></span>${next ? `<span>次の継続特典 <b>${ymd(next)}</b></span>` : ''}${/^https?:\/\//i.test(f.profileUrl || '') ? `<a href="${h(f.profileUrl)}" target="_blank" rel="noopener">プロフィール ↗</a>` : ''}
         ${f.status === 'leftCandidate' ? `<button class="btn small danger leftbtn" data-id="${h(f.memberNo)}">退会確定</button>` : ''}</div>
     </section>
     <div class="membergrid">
       <div class="mcol">
         <section class="panel"><div class="secthead"><h2>🎁 特典の記録</h2><span class="legend"><i class="lg st-done"></i>済 <i class="lg st-overdue"></i>期限切れ <i class="lg st-current"></i>今 <i class="lg st-future"></i>先</span></div>
-          <p class="muted small">マスを押すと「渡した」になります（もう一度押すと取り消し）。右クリックで予定日・次に回す・日付やメモの記録。</p>
+          <p class="muted small">マスを押すと「渡した」になります（もう一度押すと取り消し）。マスにマウスを乗せると右上に出る「…」から、予定日・次に回す・日付やメモの記録ができます。</p>
           <div id="perkGrid">${grid.length ? grid.map(row => {
             const meta = KIND_META[row.kind] || {};
             return `<div class="grid-row"><div class="gr-title"><span class="kindtag" style="--k:${meta.color}">${row.icon || meta.icon}</span>${h(row.title)}</div>
               ${(() => {
                 const cellHtml = c => `<button class="cell st-${c.state}" data-key="${h(c.key)}" title="${h(c.title || '')} ${c.state === 'done' && c.doneDate ? '（' + ymd(c.doneDate) + '）' : '期限 ' + ymd(c.due)}">
-                <span class="cl">${h(c.label)}</span><span class="cs">${c.state === 'done' ? '✓ ' + (c.doneDate ? md(c.doneDate) : '済') : c.state === 'carried' ? '→ 次へ' : c.state === 'dismissed' ? '対象外' : c.state === 'overdue' ? '期限切れ' : c.state === 'current' ? (c.count > 1 ? c.count + '回分' : '未') : '・'}${c.scheduled && c.state !== 'done' ? ' 予定' + md(c.due) : ''}</span></button>`;
+                <span class="cellmenu" title="ほかの操作">…</span><span class="cl">${h(c.label)}</span><span class="cs">${c.state === 'done' ? '✓ ' + (c.doneDate ? md(c.doneDate) : '済') : c.state === 'carried' ? '→ 次へ' : c.state === 'dismissed' ? '対象外' : c.state === 'overdue' ? '期限切れ' : c.state === 'current' ? (c.count > 1 ? c.count + '回分' : '未') : '・'}${c.scheduled && c.state !== 'done' ? ' 予定' + md(c.due) : ''}</span></button>`;
                 const KEEP = 6;
                 if (row.cells.length <= KEEP + 2) return `<div class="cells">${row.cells.map(cellHtml).join('')}</div>`;
                 const old = row.cells.slice(0, row.cells.length - KEEP), recent = row.cells.slice(-KEEP);
@@ -1588,22 +1592,27 @@ function renderMember() {
                 return `<details class="older"${badN ? ' open' : ''}><summary>それ以前 ${old.length}回（済 ${doneN}${badN ? `・<b class="red">期限切れ ${badN}</b>` : ''}）</summary><div class="cells">${old.map(cellHtml).join('')}</div></details><div class="cells">${recent.map(cellHtml).join('')}</div>`;
               })()}</div>`;
           }).join('') : '<div class="empty">対象の特典はありません</div>'}</div>
-          ${recs.length ? `<details><summary class="small muted">記録の一覧（日付・メモの修正）${recs.length}件</summary><table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
-            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
-            <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></details>` : ''}
-          ${migrated.length ? `<details><summary class="small muted">v4から引継ぎ（渡し済み扱い）${migrated.length}件</summary><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul></details>` : ''}</section>
+        </section>
       </div>
       <div class="mcol">
-        <section class="panel"><h2>🎂 誕生日</h2>
+        <section class="panel profile"><h2>🎂 誕生日</h2>
           <div class="field"><select name="bm"><option value="">-</option>${Array.from({ length: 12 }, (_, i) => `<option ${Number(bm) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>月
             <select name="bd"><option value="">-</option>${Array.from({ length: 31 }, (_, i) => `<option ${Number(bd) === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select>日
-            <button class="btn small primary" id="saveBirthday">保存</button></div></section>
-        <section class="panel"><h2>📝 メモ</h2>
+            <button class="btn small primary" id="saveBirthday">保存</button></div>
+          <h2 style="margin-top:14px">📝 メモ</h2>
           <textarea id="memo" rows="7" placeholder="好きなもの、配送の注意、話した内容など">${h(f.memo || '')}</textarea>
           <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="muted small" id="memoState"></span><button class="btn small primary" id="saveMemo">保存</button></div></section>
-        <section class="panel"><h2>📋 受けられる特典</h2>${(() => { const x = perksForPlan(data.settings, plan, today); const names = [...x.own, ...x.inherited.flatMap(g => g.perks)].map(p => h(p.name)); return `<ul class="plain small">${names.map(n => `<li>${n}</li>`).join('')}</ul><p class="small">🎁 12か月継続：<b>${h(x.tenure)}</b></p><button class="link small" data-goto="plans">プラン特典の一覧へ →</button>`; })()}</section>
-        <section class="panel"><h2>📈 プランの変遷</h2><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
-          <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></section>
+        <details class="panel more-details" id="memberMore"><summary>詳しく見る</summary>
+          <div class="sub"><h2>📋 受けられる特典</h2>${(() => { const x = perksForPlan(data.settings, plan, today); const names = [...x.own, ...x.inherited.flatMap(g => g.perks)].map(p => h(p.name)); return `<ul class="plain small">${names.map(n => `<li>${n}</li>`).join('')}</ul><p class="small">🎁 12か月継続：<b>${h(x.tenure)}</b></p><button class="link small" data-goto="plans">プラン特典の一覧へ →</button>`; })()}</div>
+        
+          <div class="sub"><h2>📈 プランの変遷</h2><ul class="plain">${f.planHistory.map(ph => `<li>${badge(ph.planId)} ${ymd(ph.start)} 〜 ${ph.end ? ymd(ph.end) : '継続中'}</li>`).join('')}</ul>
+          <h4>在籍期間</h4><ul class="plain">${f.periods.map(p => `<li>${ymd(p.start)} 〜 ${p.end ? ymd(p.end) : '継続中'}</li>`).join('')}</ul></div>
+
+          <div class="sub">${recs.length ? `<details><summary class="small muted">記録の一覧（日付・メモの修正）${recs.length}件</summary><table><tbody>${recs.map(r => `<tr class="record"><td class="nowrap">${r.type === 'dismissed' ? '<span class="tag gray">対象外</span>' : ymd(r.date)}</td>
+            <td>${h(recordTitle(r))}${r.variant ? `（${h(r.variant)}）` : ''}${r.minutes ? ` ${r.minutes}分` : ''}${r.memo ? `<div class="muted small">${h(r.memo)}</div>` : ''}</td>
+            <td class="nowrap"><button class="btn small ghost editrec" data-id="${h(r.id)}">修正</button><button class="btn small ghost delrec" data-id="${h(r.id)}">削除</button></td></tr>`).join('')}</tbody></table></details>` : ''}
+          ${migrated.length ? `<details><summary class="small muted">前のツールから引き継いだ分（渡し済み扱い）${migrated.length}件</summary><ul class="plain">${migrated.map(r => `<li>${h(recordTitle(r))}　<span class="muted">${h(r.key.split('|')[2] || '')}</span> <button type="button" class="link unmig" data-id="${h(r.id)}">未渡しに戻す</button></li>`).join('')}</ul></details>` : ''}</div>
+        </details>
       </div>
     </div></div>`;
 }
@@ -1637,6 +1646,7 @@ function wireMember() {
     const c = cells[b.dataset.key];
     b.onclick = () => (c.state === 'done' || c.state === 'dismissed' ? undoCell(c, asItem(c)) : c.state === 'carried' ? toast('この回は次の回に回してあります（右クリックで操作）') : deliverNow(asItem(c)));
     b.oncontextmenu = e => { e.preventDefault(); itemMenu(asItem(c)); };
+    const cm = b.querySelector('.cellmenu'); if (cm) cm.onclick = e => { e.stopPropagation(); itemMenu(asItem(c)); };
   });
 }
 
@@ -1691,37 +1701,42 @@ function previewV4(v4) {
 function renderSettings() {
   const rules = data.settings.rules.map(r => `<tr><td>${h(KIND_LABEL[r.kind])}${r.months ? `（${r.months}か月）` : ''}</td>
     <td>${h(r.label)}</td><td>${r.planIds.map(badge).join('')}</td><td class="nowrap"><button type="button" class="btn small ghost editrule" data-id="${h(r.id)}">編集</button></td></tr>`).join('');
-  return `
-    <section class="panel"><h2>基本</h2>
-      <label>ファンクラブ名<input name="club" value="${h(data.settings.clubName)}"></label>
-      <label>このPCの名前（もう1台と区別するため）<input name="device" value="${h(storage.deviceName())}"></label>
-      <button class="btn primary" id="saveSettings">保存</button></section>
-    <section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
+  const tabs = [['basic', '基本・共有'], ['perks', '特典'], ['data', 'データ']];
+  const bar = `<div class="settabs">${tabs.map(([k, l]) => `<button class="settab ${setTab === k ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</div>`;
+  if (setTab === 'perks') return bar + `<section class="panel"><div class="secthead"><h2>特典ルール</h2><button type="button" class="btn small ghost" id="addRule">＋追加</button></div>
       <table><tbody>${rules}</tbody></table></section>
     <section class="panel"><div class="secthead"><h2>プラン特典の中身</h2><button type="button" class="btn small primary" id="savePerks">保存</button></div>
       <p class="muted small">ここで編集するのは12月からの新しい内容です。「上位にも」のチェックを外すと、上のプランには引き継がれません。</p>
       ${[...data.settings.plans].sort((a, b) => b.order - a.order).map(p => `<div class="perkplan" data-plan="${p.id}"><h4>${badge(p.id)} ${h(p.name)}</h4>
-        ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? '<span class="tracked">管理中</span>' : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
+        ${((data.settings.planPerks || defaultPlanPerks())[p.id] || []).map((x, i) => `<div class="perkrow" data-i="${i}"><input name="perkname" value="${h(x.name)}"><label class="inline"><input type="checkbox" name="inherit" ${x.noInherit ? '' : 'checked'}> 上位にも</label>${x.rule ? '<span class="tracked">リストで管理</span>' : '<button type="button" class="link small delperk">削除</button>'}</div>`).join('')}
         <button type="button" class="link small addperk">＋特典を追加</button></div>`).join('')}</section>
-    <section class="panel"><h2>CSV取込の履歴</h2>${(() => { const logs = Object.values(data.records).filter(r => r.type === 'csvlog' && !r.deleted).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 20);
+    `;
+  if (setTab === 'data') return bar + `<section class="panel"><h2>CSV取込の履歴</h2>${(() => { const logs = Object.values(data.records).filter(r => r.type === 'csvlog' && !r.deleted).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 20);
       return logs.length ? `<table><thead><tr><th>日時</th><th>PC</th><th class="r">行数</th><th class="r">新規</th><th class="r">退会候補</th><th class="r">再入会</th><th class="r">プラン変更</th></tr></thead><tbody>${logs.map(l => { const d = new Date(l.at); return `<tr class="csvlog"><td>${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</td><td>${h(l.device)}</td><td class="r">${l.counts.rows}</td><td class="r">${l.counts.added}</td><td class="r">${l.counts.leftCandidates}</td><td class="r">${l.counts.rejoined || 0}</td><td class="r">${l.counts.planChanged || 0}</td></tr>`; }).join('')}</tbody></table>` : '<p class="muted">まだ取り込んでいません</p>'; })()}</section>
+    <section class="panel"><h2>データ</h2>
+      <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
+      <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">バックアップから読み込む</button></div></section>`;
+  return bar + `<section class="panel"><h2>基本</h2>
+      <label>ファンクラブ名<input name="club" value="${h(data.settings.clubName)}"></label>
+      <label>このPCの名前（もう1台と区別するため）<input name="device" value="${h(storage.deviceName())}"></label>
+      <button class="btn primary" id="saveSettings">保存</button></section>
     <section class="panel"><h2>もう1台のアカウントと共有</h2>
       ${storage.shareWith ? `<div class="row"><input id="shareEmail" type="email" placeholder="もう1台のGoogleアカウントのメールアドレス" style="flex:1"><button type="button" class="btn ghost" id="shareBtn">編集可能で共有</button></div>
       <p class="small muted">共有したら、もう1台のPCでツールを開いて「共有されたデータを開く」を押してください。</p>` : '<p class="muted small">このモードでは共有できません</p>'}
       ${storage.forgetFile ? '<p class="small"><button type="button" class="link" id="switchShared">共有されたデータに切り替える／ファイルを選び直す</button></p>' : ''}</section>
-    <section class="panel"><h2>データ</h2>
-      <p class="small muted">保存先：${h(storage.folderName ? storage.folderName() : '')} の fan_data.json（バックアップは FC管理_バックアップ フォルダ）</p>
-      <div class="row"><button type="button" class="btn ghost" id="exportBtn">データを書き出す</button><button type="button" class="btn ghost" id="importBtn">バックアップから読み込む</button></div></section>`;
+    `;
 }
 
 function wireSettings() {
   const d = $('#page');
-  d.querySelector('#saveSettings').onclick = () => {
+  const on = (sel, fn) => { const el = d.querySelector(sel); if (el) el.onclick = fn; };
+  d.querySelectorAll('.settab').forEach(b => b.onclick = () => { setTab = b.dataset.tab; render(); });
+  on('#saveSettings', () => {
     const club = d.querySelector('[name=club]').value.trim(), dev = d.querySelector('[name=device]').value.trim();
     if (dev && dev !== storage.deviceName()) storage.setDeviceName(dev);
     if (club && club !== data.settings.clubName) return commit(withSettings(s => { s.clubName = club; }));
     render();
-  };
+  });
   const sw = d.querySelector('#switchShared');
   if (sw) sw.onclick = () => { if (confirm('今開いているデータから離れて、Googleドライブのファイルを選び直します。よろしいですか？（データは消えません）')) { storage.forgetFile(); boot(); } };
   const sb = d.querySelector('#shareBtn');
@@ -1736,7 +1751,7 @@ function wireSettings() {
     b.before(row); row.querySelector('.delperk').onclick = () => row.remove(); row.querySelector('input').focus();
   });
   d.querySelectorAll('.delperk').forEach(b => b.onclick = () => b.closest('.perkrow').remove());
-  d.querySelector('#savePerks').onclick = () => {
+  on('#savePerks', () => {
     const cur = data.settings.planPerks || defaultPlanPerks();
     const next = {};
     d.querySelectorAll('.perkplan').forEach(pp => {
@@ -1750,15 +1765,15 @@ function wireSettings() {
       }).filter(x => x.name);
     });
     commit(withSettings(s => { s.planPerks = next; }));
-  };
-  d.querySelector('#addRule').onclick = () => openRuleEditor(null, { kind: 'tenure', months: 24 });
+  });
+  on('#addRule', () => openRuleEditor(null, { kind: 'tenure', months: 24 }));
   d.querySelectorAll('.editrule').forEach(b => b.onclick = () => openRuleEditor(b.dataset.id));
-  d.querySelector('#exportBtn').onclick = () => {
+  on('#exportBtn', () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
     a.download = `fan_data_export_${today}.json`; a.click();
-  };
-  d.querySelector('#importBtn').onclick = () => $('#csvInput').click();
+  });
+  on('#importBtn', () => $('#csvInput').click());
 }
 
 function withSettings(fn) {
