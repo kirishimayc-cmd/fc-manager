@@ -9,7 +9,7 @@
 <style>:root{--wine:#8e2443;--wine-soft:#f8eef1;--ink:#26222a;--muted:#77707c;--line:#ebe5ea;--bg:#faf7f8;--warn:#b42318;font-family:system-ui,"Segoe UI","Yu Gothic UI",sans-serif;color:var(--ink);background:var(--bg)}
 *{box-sizing:border-box}body{margin:0}
 h1{font-size:22px;margin:0 0 10px}h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:4px 0 10px}h4{font-size:14px;margin:16px 0 6px}
-.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px #2b1d240a,0 6px 20px #2b1d2408}
 .actions,.row{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid transparent;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn.primary{background:var(--wine);color:#fff}.btn.primary:hover{filter:brightness(1.1)}.btn.ghost{background:#fff;border-color:#ddd5db;color:var(--ink)}.btn.ghost:hover{background:var(--wine-soft)}
@@ -127,6 +127,32 @@ details summary{cursor:pointer;margin-top:10px}
 .settabs{display:flex;gap:6px;margin-bottom:12px}.settab{border:1px solid #ddd5db;background:#fff;border-radius:999px;padding:6px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.settab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .more-details{padding:0}.more-details>summary{padding:14px 16px;cursor:pointer;font-weight:700;font-size:14px}.more-details[open]>summary{border-bottom:1px solid var(--line)}.more-details .sub{padding:12px 16px;border-bottom:1px solid #f3eff2}.more-details .sub:last-child{border-bottom:0}
 .cell{position:relative}.cellmenu{position:absolute;top:3px;right:7px;display:none;font-size:15px;line-height:1;padding:2px 4px;border-radius:6px;color:inherit}.cell:hover .cellmenu{display:block}.cellmenu:hover{background:#0000000f}
+
+/* ---- dashboard: hero, quick actions, calendar ---- */
+.hero{display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(135deg,#8e2443,#6d1b37);color:#fff;border-radius:20px;padding:24px 28px;margin-bottom:14px;box-shadow:0 10px 30px #8e244333}
+.hero-label{font-size:13px;opacity:.85;font-weight:600}.hero-num{display:flex;align-items:baseline;gap:6px;margin:4px 0 14px}.hero-num b{font-size:52px;line-height:1;letter-spacing:1px}.hero-num span{font-size:18px;font-weight:700}
+.hero-num em{font-style:normal;margin-left:12px;background:#fff;color:var(--warn);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:800}
+.hero .btn.primary{background:#fff;color:var(--wine)}.hero-ring{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;opacity:.95}
+.ring{width:110px;height:110px}.ring-bg{fill:none;stroke:#ffffff33;stroke-width:9}.ring-fg{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round}.ring text{fill:#fff;font-size:17px;font-weight:800}
+.qas{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.qa{display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 8px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;box-shadow:0 1px 2px #2b1d240a}
+.qa span{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--wine-soft);color:var(--wine);font-size:20px}.qa:hover{border-color:var(--wine)}
+.small-kpis{display:flex;gap:18px;margin:0 4px 12px;font-size:13px;color:var(--muted)}.small-kpis b{color:var(--ink)}
+#cal .secthead h2{font-size:16px}.cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal-head span{text-align:center;font-size:11px;color:var(--muted);padding-bottom:4px}
+.day{position:relative;height:46px;border:1px solid transparent;border-radius:10px;background:#faf7f8;font:inherit;font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.day.empty{background:none}.day.today{border-color:var(--wine);font-weight:800;color:var(--wine)}.day.sel{background:var(--ink);color:#fff}
+.day i{min-width:8px;height:8px;border-radius:999px;background:#7e4cc4;font-style:normal;font-size:10px;line-height:8px;color:#fff;padding:0 3px}.day i:not(:empty){height:14px;line-height:14px;min-width:14px}.day i.red{background:var(--warn)}
+#calDay{margin-top:12px}#calDay h4{margin:6px 0}
+/* ---- phones: bottom bar ---- */
+@media(max-width:860px){
+  .shell{display:block}.mainarea{padding:14px 14px 90px}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:20;padding:6px;flex-direction:row}
+  .side .club,.sidefoot{display:none}.side nav{flex-direction:row;justify-content:space-around;width:100%;flex-wrap:nowrap}
+  .nav{flex-direction:column;gap:2px;font-size:10px;padding:6px 4px;width:auto;flex:1;align-items:center}.nav .ic{font-size:18px}.nav .cnt{position:absolute;margin:0 0 0 18px}
+  .nav[data-page="revenue"],.nav[data-page="records"]{display:none}
+  .hero{flex-direction:column;align-items:flex-start}.hero-ring{align-self:center}.qas{grid-template-columns:repeat(4,1fr);gap:8px}.qa{padding:12px 4px;font-size:11px}.qa span{width:40px;height:40px}
+  .pagehead{flex-direction:column;align-items:flex-start;gap:8px}.membergrid,.dashgrid{grid-template-columns:1fr !important}
+}
 </style>
 </head>
 <body>
@@ -587,6 +613,25 @@ function fanPerkGrid(data, fanId, today) {
     out.push(row);
   }
   return out.sort((a, b) => GRID_ORDER.indexOf(a.kind) - GRID_ORDER.indexOf(b.kind));
+}
+
+// 今月が期限の特典のうち、何件渡したか（ダッシュボードの輪）
+function monthProgress(data, today) {
+  const recs = live(data);
+  const settled = new Set();
+  for (const r of recs) {
+    if (r.type === 'delivered' || r.type === 'dismissed' || r.type === 'migrated') settled.add(r.key);
+    if (r.type === 'delivered') (r.coversKeys || []).forEach(k => settled.add(k));
+  }
+  const carried = new Set(recs.filter(r => r.type === 'carry').map(r => r.key));
+  const sched = new Map();
+  for (const r of recs.filter(r => r.type === 'schedule')) { const p = sched.get(r.key); if (!p || p.updatedAt < r.updatedAt) sched.set(r.key, r); }
+  const extras = recs.filter(r => r.type === 'extra' && data.fans[r.fanId]).map(r => ({ key: r.key, due: r.due }));
+  const mk = monthKey(today);
+  const inMonth = [...generate(data, today), ...extras]
+    .map(i => ({ key: i.key, due: (sched.get(i.key) || {}).scheduledDate || i.due }))
+    .filter(i => !carried.has(i.key) && monthKey(i.due) === mk);
+  return { total: inMonth.length, done: inMonth.filter(i => settled.has(i.key)).length };
 }
 
 // ---- records.js
@@ -1060,6 +1105,13 @@ function sortFanRows(rows, key, dir) {
   });
 }
 
+// カレンダー用：その月の項目を日ごとにまとめる（キーは日の数字）
+function itemsByDay(items, ym) {
+  const out = {};
+  for (const i of items) if (i.due && i.due.slice(0, 7) === ym) (out[String(Number(i.due.slice(8, 10)))] ||= []).push(i);
+  return out;
+}
+
 // ---- plan-perks.js
 
 // そのプランが受けられる特典：自分のプランの特典＋下位プランの特典（上位に引き継がないものは除く）
@@ -1089,7 +1141,7 @@ const STATUS_LABEL = { active: '在籍', leftCandidate: '退会候補', left: '�
 const GROUPS = [['overdue', '期限切れ'], ['thisMonth', '今月'], ['nextMonth', '来月'], ['later', 'それ以降（個別の特典）']];
 const KIND_LABEL = { join: '入会時', interval: '◯か月ごと', birthday: '誕生日', tenure: '継続◯か月' };
 
-let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', planVer = null, setTab = 'basic', fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
+let storage, data, today, lastMtime = 0, page = 'dashboard', memberId = null, fanFilter = 'active', listSort = 'due', listKind = 'all', listPlan = 'all', planVer = null, setTab = 'basic', calYm = null, calDay = null, fanSort = { key: 'memberNo', dir: 'asc' }, fanPlan = 'all', fanQuery = '';
 const $ = s => document.querySelector(s);
 const h = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const yen = n => '¥' + Number(n || 0).toLocaleString('ja-JP');
@@ -1265,7 +1317,7 @@ function render() {
       </aside>
       <section class="mainarea">
         <header class="pagehead"><h1>${title}</h1>
-          <div class="actions">${csvBadge()}<button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button></div></header>
+          <div class="actions">${csvBadge()}${page === 'dashboard' ? '' : '<button class="btn primary" id="extraBtn">＋特典を追加</button><button class="btn ghost" id="csvBtn">CSV取込</button>'}</div></header>
         <div id="banner"></div>
         <div id="page">${renderPage(list)}</div>
       </section>
@@ -1333,10 +1385,27 @@ function renderDashboard(list) {
   const candidates = fans.filter(f => f.status === 'leftCandidate');
   const planRows = data.settings.plans.map(p => ({ p, n: active.filter(f => planOn(f, today) === p.id).length }));
   const maxN = Math.max(1, ...planRows.map(x => x.n));
-  const kpi = (label, val, cls = '', to = '') => `<button class="kpi ${cls}" ${to ? `data-goto="${to}"` : ''}><span>${label}</span><b>${val}</b></button>`;
+  const prog = monthProgress(data, today);
+  const pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 100;
+  const R = 34, C = 2 * Math.PI * R;
+  const ring = `<svg class="ring" viewBox="0 0 84 84"><circle cx="42" cy="42" r="${R}" class="ring-bg"/><circle cx="42" cy="42" r="${R}" class="ring-fg" stroke-dasharray="${(C * pct) / 100} ${C}" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle">${pct}%</text></svg>`;
+  const pending = count('thisMonth');
   const who = f => `<button class="link fanlink" data-id="${h(f.memberNo)}">${h(f.name)}</button>`;
   return `
-    <div class="kpis">${kpi('在籍', active.length + '人', '', 'members')}${kpi('今月渡す', count('thisMonth') + '件', '', 'perks')}${kpi('期限切れ', count('overdue') + '件', count('overdue') ? 'red' : '', 'perks')}${kpi('月額収益', yen(monthly), '', 'revenue')}</div>
+    <section class="hero">
+      <div class="hero-main"><span class="hero-label">今月渡すもの</span>
+        <div class="hero-num"><b>${pending}</b><span>件</span>${count('overdue') ? `<em>期限切れ ${count('overdue')}件</em>` : ''}</div>
+        <button class="btn primary big" data-goto="perks">渡すものを見る</button></div>
+      <div class="hero-ring">${ring}<span>今月 ${prog.total}件中 ${prog.done}件 済</span></div>
+    </section>
+    <div class="qas">
+      <button class="qa" id="qaExtra"><span>＋</span>特典を追加</button>
+      <button class="qa" id="qaCsv"><span>⇪</span>CSV取込</button>
+      <button class="qa" data-goto="members"><span>🔍</span>会員を探す</button>
+      <button class="qa" data-goto="plans"><span>📋</span>プラン特典</button>
+    </div>
+    <div class="kpis small-kpis"><span>在籍 <b>${active.length}人</b></span><span>月額収益 <b>${yen(monthly)}</b></span></div>
+    ${renderCalendar()}
     ${renderNotices(list.notices)}
     <div class="dashgrid">
       <section class="panel span2"><div class="secthead"><h2>⚠ 急ぎ（期限切れ・今月）</h2><button class="link" data-goto="perks">すべて見る →</button></div>
@@ -1347,6 +1416,26 @@ function renderDashboard(list) {
         <h4>退会候補 ${candidates.length}人</h4>${candidates.length ? `<p class="names">${candidates.map(who).join('、')}</p><button class="link small" data-goto="members">会員名簿で確認する →</button>` : '<p class="muted small">なし</p>'}</section>
       <section class="panel span2"><h2>📊 プラン別の人数（在籍）</h2><div class="bars">${planRows.map(({ p, n }) => `<div class="bar"><span class="bl">${badge(p.id)}</span><span class="bt"><i style="width:${(n / maxN) * 100}%"></i></span><b>${n}人</b></div>`).join('')}</div></section>
     </div>`;
+}
+
+function renderCalendar() {
+  const ym = calYm || today.slice(0, 7);
+  const [y, m] = ym.split('-').map(Number);
+  const items = computeList(data, today, { untilMonths: 14 }).items;
+  const byDay = itemsByDay(items, ym);
+  const first = new Date(y, m - 1, 1).getDay(), days = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < first; i++) cells.push('<span class="day empty"></span>');
+  for (let d = 1; d <= days; d++) {
+    const its = byDay[String(d)] || [], ds = `${ym}-${String(d).padStart(2, '0')}`;
+    const bad = its.some(i => i.status === 'overdue');
+    cells.push(`<button class="day ${its.length ? 'has' : ''} ${ds === today ? 'today' : ''} ${calDay === ds ? 'sel' : ''}" data-day="${ds}"><span>${d}</span>${its.length ? `<i class="${bad ? 'red' : ''}">${its.length > 1 ? its.length : ''}</i>` : ''}</button>`);
+  }
+  const sel = calDay && calDay.startsWith(ym) ? (byDay[String(Number(calDay.slice(8)))] || []) : [];
+  return `<section class="panel" id="cal"><div class="secthead"><button class="link" id="calPrev">‹ 前の月</button><h2>${y}年${m}月</h2><button class="link" id="calNext">次の月 ›</button></div>
+    <div class="cal-head">${['日', '月', '火', '水', '木', '金', '土'].map(w => `<span>${w}</span>`).join('')}</div>
+    <div class="cal-grid">${cells.join('')}</div>
+    <div id="calDay">${calDay ? (sel.length ? `<h4>${md(calDay)} の渡すもの</h4>${sortItems(sel, 'due', fanName).map(itemRow).join('')}` : `<p class="muted small">${md(calDay)} に期限の特典はありません</p>`) : '<p class="muted small">日付を押すと、その日が期限の特典が出ます</p>'}</div></section>`;
 }
 
 function renderList(list) {
@@ -1477,15 +1566,21 @@ function renderRevenue() {
 
 // ---------- wiring ----------
 function wire(list) {
-  $('#csvBtn').onclick = () => $('#csvInput').click();
-  $('#extraBtn').onclick = openExtra;
+  if ($('#csvBtn')) $('#csvBtn').onclick = () => $('#csvInput').click();
+  if ($('#extraBtn')) $('#extraBtn').onclick = openExtra;
   document.querySelectorAll('.nav').forEach(b => b.onclick = () => { page = b.dataset.page; render(); window.scrollTo(0, 0); });
   document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { page = b.dataset.goto; render(); window.scrollTo(0, 0); });
   const ls = $('#listSort'); if (ls) ls.onchange = () => { listSort = ls.value; render(); };
+  document.querySelectorAll('#cal .day[data-day]').forEach(b => b.onclick = () => { calDay = b.dataset.day; render(); });
+  const shiftMonth = n => { const base = (calYm || today.slice(0, 7)) + '-01'; calYm = addMonths(base, n).slice(0, 7); calDay = null; render(); };
+  if ($('#calPrev')) { $('#calPrev').onclick = () => shiftMonth(-1); $('#calNext').onclick = () => shiftMonth(1); }
+  if ($('#qaExtra')) $('#qaExtra').onclick = openExtra;
+  if ($('#qaCsv')) $('#qaCsv').onclick = () => $('#csvInput').click();
   document.querySelectorAll('.kindchip').forEach(b => b.onclick = () => { listKind = b.dataset.kind; render(); });
   document.querySelectorAll('.verbtn').forEach(b => b.onclick = () => { planVer = b.dataset.ver; render(); });
   document.querySelectorAll('#list .planchip').forEach(b => b.onclick = () => { listPlan = b.dataset.plan; render(); });
-  const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items : [];
+  const extraItems = page === 'member' && memberId ? computeList(data, today, { fanId: memberId, untilMonths: 12 }).items
+    : page === 'dashboard' ? computeList(data, today, { untilMonths: 14 }).items : [];
   const byKey = Object.fromEntries([...list.items, ...extraItems].map(i => [i.key, i]));
   document.querySelectorAll('#page .item').forEach(row => {
     const it = byKey[row.dataset.key];
